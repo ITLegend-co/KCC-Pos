@@ -45,6 +45,20 @@ await step('edited open month keeps totals when staff adds another payment',asyn
  await staff.store.call('addPayment',payment('open-edit-02',4,'2026-12-03','S2'));const after=(await staff.db.ref('ledger/2026-12/S2').get()).val();assert.equal(after.totalCents,700);assert.ok(after.editHead);
  const r=await staff.store.call('issueReceipt',{studentId:'S2',month:'2026-12'});assert.equal(r.totalCents,700);assert.equal(r.items.reduce((n,p)=>n+p.amountCents,0),700);
 });
+await step('insurance stays separate from training, with separate receipt and shared numbering',async()=>{
+ const training=(await staff.db.ref('ledger/2026-10/S1').get()).val();
+ const pay={...payment('insurance-01',20),category:'insurance'};await staff.store.call('addPayment',pay);await staff.store.call('addPayment',pay);
+ assert.equal((await staff.db.ref('insuranceLedger/2026-10/S1/totalCents').get()).val(),2000);assert.equal((await staff.db.ref('ledger/2026-10/S1/totalCents').get()).val(),training.totalCents);
+ const r=await staff.store.call('issueReceipt',{studentId:'S1',month:'2026-10',category:'insurance'});assert.equal(r.category,'insurance');assert.equal(r.totalCents,2000);assert.equal(r.items.length,1);assert.notEqual(r.number,training.receipt.number);assert.ok(r.id.endsWith('_insurance'));
+ const repeat=await staff.store.call('issueReceipt',{studentId:'S1',month:'2026-10',category:'insurance'});assert.equal(repeat.number,r.number);
+ await assert.rejects(staff.store.call('addPayment',{...payment('insurance-02',10),category:'insurance'}),/already saved/);
+ await assertFails(staff.db.ref('insuranceLedger/2026-10/S1/receipt/totalCents').set(100));
+ const l=(await staff.db.ref('insuranceLedger/2026-10/S1').get()).val();await admin.store.call('editPayment',{studentId:'S1',month:'2026-10',category:'insurance',paymentId:l.head,date:'2026-10-02',amount:25,method:'QR',reference:'',reason:'Correct insurance'});
+ assert.equal((await staff.db.ref('insuranceLedger/2026-10/S1/receipt/totalCents').get()).val(),2500);assert.equal((await staff.db.ref('ledger/2026-10/S1/receipt/totalCents').get()).val(),training.receipt.totalCents);
+ await admin.store.call('correctReceipt',{id:r.id,category:'insurance',amount:26,reason:'Insurance correction'});assert.equal((await staff.db.ref('insuranceLedger/2026-10/S1/receipt/totalCents').get()).val(),2600);
+ await staff.store.call('addPayment',{...payment('insurance-open',3,'2027-02-01','S2'),category:'insurance'});await staff.store.call('addPayment',payment('training-open',4,'2027-02-01','S2'));
+ const ir=await staff.store.call('issueReceipt',{studentId:'S2',month:'2027-02',category:'insurance'});const tr=await staff.store.call('issueReceipt',{studentId:'S2',month:'2027-02'});assert.equal(ir.totalCents,300);assert.equal(tr.totalCents,400);assert.notEqual(ir.number,tr.number);
+});
 await step('only admin deletes and restores students, preserving historical records',async()=>{
  await assert.rejects(staff.store.call('deleteStudent',{studentId:'S2'}),/Administrator/);await assertFails(staff.db.ref('students/S2').remove());await assertFails(staff.db.ref('students/S2/deleted').set(true));
  await admin.store.call('deleteStudent',{studentId:'S2'});assert.equal((await staff.db.ref('students/S2/deleted').get()).val(),true);assert.equal((await staff.db.ref('students/S2/name').get()).val(),'Another Student');assert.ok((await staff.db.ref('ledger/2026-12/S2/receipt').get()).val());

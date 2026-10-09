@@ -41,3 +41,7 @@ The attached template is a layout reference, not a workbook to execute. The logo
 `npm test` checks cents, calendar cutoffs, numbering, and the student student import. `npm run check` checks JavaScript syntax. Live sign-in, deployed rules/function permissions, concurrent receipt transactions, browser PDF behavior, and actual sharing/printing must be verified in the deployed Firebase project. A Firebase config alone does not grant database/admin deployment access.
 
 A two-page receipt generated with the production PDF renderer was rendered and visually inspected with example data. This verifies the static PDF layout, not live browser sharing or printing.
+
+## Realtime Database rules
+
+This application uses Cloud Firestore. It does not store POS data in Realtime Database. If Realtime Database is enabled, paste `database.rules.json` into Firebase Console > Realtime Database > Rules and publish it to deny all client access to that unused database. These rules do not replace `firestore.rules`, and enabling Realtime Database alone will not activate this POS.

@@ -17,6 +17,12 @@ The student import is included in the previously supplied setup ZIP under `priva
 
 Optional CLI rules deployment: with an authorized Firebase account, run `npx firebase-tools login` followed by `npx firebase-tools deploy --project kcc-pos --only database`. The Console publish route does not require Node.js or a billing upgrade.
 
+## Excel student upload
+
+Admin and approved staff can open **Students**, download the blank Excel template, fill its `Students` sheet, and choose **Preview upload**. Review the names and schools, then click **Import students**. The header row is `NO.`, `STUDENT FULLNAME`, `SCHOOL` in columns A–C. NO. is a list number, not a database ID. Save as `.xlsx`, use plain values, and upload up to 400 students (5 MB maximum).
+
+The importer requires a full name and school, ignores empty rows, and skips duplicate name/school pairs in the file or existing directory. Existing student IDs, students and payments are preserved. A different school creates a separate record, so check names and schools before confirming. Re-uploading after an interrupted import safely skips completed entries. Excel files are read in the browser and only the confirmed student records are sent to Firebase. The filled private student workbook is supplied separately and is not stored in this public repository.
+
 ## Daily operation
 
 - Staff create an account and verify their email. Admin approves them in Administration before they can access club data or manage students/payments. Admin can revoke access.

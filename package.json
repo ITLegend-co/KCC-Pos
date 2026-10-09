@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/store-unit.test.cjs",
-    "check": "node --check public/app.js && node --check public/store.js && node --check public/pdf.js",
+    "test": "node --test tests/*-unit.test.cjs",
+    "check": "node --check public/app.js && node --check public/store.js && node --check public/pdf.js && node --check public/student-import.js",
     "test:rules": "node tests/rtdb.test.cjs"
   },
   "devDependencies": {

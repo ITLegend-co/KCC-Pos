@@ -2,6 +2,7 @@ import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,sendEmailVerification,sendPasswordResetEmail,signOut} from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js';
 import {createStore,chain,receiptView,ADMIN} from './store.js';
 import {makePdf} from './pdf.js';
+import {readStudentExcel} from './student-import.js';
 const config={apiKey:'AIzaSyC4_4SJewmZ4cZDqeGnOlo8EY_8TH6jLSM',authDomain:'kcc-pos.firebaseapp.com',projectId:'kcc-pos',storageBucket:'kcc-pos.firebasestorage.app',messagingSenderId:'579172957669',appId:'1:579172957669:web:e308ac600c74f59c51830c'};
 const app=initializeApp(config),auth=getAuth(app),store=createStore(app,auth);
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -40,3 +41,16 @@ $('issueAll').onclick=()=>run($('issueAll'),async()=>{const ready=groups().filte
 async function preview(r){pdf=await makePdf(r);currentReceipt=r;if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=pdf.output('bloburl');$('pdfPreview').src=previewUrl;$('receiptDialog').showModal();}
 $('closePreview').onclick=()=>$('receiptDialog').close();$('downloadPdf').onclick=()=>pdf.save(currentReceipt.number+'.pdf');$('printPdf').onclick=()=>{pdf.autoPrint();const url=pdf.output('bloburl');const win=window.open(url,'_blank');if(!win)toast('Allow pop-ups or download the PDF to print.');setTimeout(()=>URL.revokeObjectURL(url),60000);};$('sharePdf').onclick=()=>run($('sharePdf'),async()=>{const file=new File([pdf.output('blob')],currentReceipt.number+'.pdf',{type:'application/pdf'});if(navigator.canShare?.({files:[file]}))await navigator.share({files:[file],title:currentReceipt.number});else{pdf.save(file.name);toast('PDF downloaded. Attach it in WhatsApp or email to share.');}});
 $('export').onclick=()=>{const quote=v=>'"'+String(v??'').replaceAll('"','""').replace(/^[=+@-]/,"'$&")+'"';const csv=[['Date','Student','School','Method','Reference','Amount RM'],...payments.map(p=>{const s=students.find(s=>s.id===p.studentId);return [p.date,s?.name,s?.school,p.method,p.reference,(p.amountCents/100).toFixed(2)];})].map(row=>row.map(quote).join(',')).join('\r\n');const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='KCC-payments-'+$('month').value+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+
+let excelDraft=null;
+function clearExcel(){excelDraft=null;$('excelReview').hidden=true;$('excelRows').innerHTML='';}
+$('excelImport').onchange=clearExcel;
+$('cancelExcel').onclick=clearExcel;
+$('excelForm').onsubmit=e=>{e.preventDefault();run(e.submitter,async()=>{
+ clearExcel();const draft=await readStudentExcel($('excelImport').files[0]);excelDraft=draft;
+ const identity=s=>JSON.stringify([s.name.trim().replace(/\s+/g,' ').toUpperCase(),s.school.trim().replace(/\s+/g,' ').toUpperCase()]);
+ const existing=new Set(students.map(identity)),matches=draft.rows.filter(s=>existing.has(identity(s))).length;
+ $('excelSummary').textContent=`${draft.rows.length} students reviewed. ${matches} already registered. ${draft.duplicates} duplicate rows skipped in this file. Existing students and payments are preserved.`;
+ $('excelRows').innerHTML=draft.rows.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.school)}</td></tr>`).join('');$('excelReview').hidden=false;
+});};
+$('confirmExcel').onclick=()=>run($('confirmExcel'),async()=>{if(!excelDraft)return;const result=await call('importStudents',{students:excelDraft.rows});clearExcel();$('excelImport').value='';toast(`${result.added} students added. ${result.skipped} already registered students skipped.`);});

@@ -1,47 +1,64 @@
 # KCC POS
 
-Daily student payments collected into one saved receipt per student per calendar month. Currency is Malaysian ringgit. Payment dates and reporting months use Malaysia time. The 74 supplied students are provided separately in a private JSON import file, with the supplied names and school labels preserved. Student names are never committed to this public repository.
+Record daily student payments and save one consolidated PDF receipt per student per calendar month. This version uses **Firebase Realtime Database + Firebase Authentication** directly. Cloud Functions, Cloud Firestore, and a billing upgrade are not required by this implementation.
 
-## First deployment
+Website: https://itlegend-co.github.io/KCC-Pos/
 
-The GitHub Pages workflow publishes the interface on every push to main. Firebase backend deployment is separate and requires an authorized Firebase account for project `kcc-pos`.
+## Activate this version
 
-1. In Firebase Console, enable Authentication → Email/Password and create the Firestore database. Confirm that `adlybinbakran@gmail.com` has UID `kjk86LonpVfk83NfpajQrhGxvOv1` in Authentication. This value is treated as the Firebase UID, not a password. If the UID differs, update `functions/domain.cjs`, `firestore.rules`, and `public/app.js` together before deployment.
-2. Enable billing (Blaze) for Cloud Functions deployment.
-3. Install Node.js 22 and run `npm install --prefix functions` from the repository folder.
-4. Run `npx firebase-tools login`, then `npx firebase-tools deploy --project kcc-pos --only functions,firestore,hosting`.
-5. If using GitHub Pages, add `itlegend-co.github.io` to Authentication → Settings → Authorized domains. Under GitHub Settings → Pages, use GitHub Actions as the source if not already enabled.
-6. Sign in as the administrator. Open Administration → Initialize club. Select your private `KCC-students.json` file to import the roster. This creates numbering `KCC{SEQ}`, next number 152, padded to four digits. Repeating setup preserves existing data.
+1. Open Firebase Console → project `kcc-pos` → Realtime Database → Rules. Replace the entire rules document with the contents of [`database.rules.json`](database.rules.json), then click **Publish**. These are Realtime Database JSON rules, not Firestore rules. Do this before entering club data.
+2. The application is configured for the existing Singapore database: `https://kcc-pos-default-rtdb.asia-southeast1.firebasedatabase.app`. The URL is in `public/store.js`.
+3. Keep Email/Password enabled in Firebase Authentication. Add `itlegend-co.github.io` to Authentication → Settings → Authorized domains.
+4. Confirm that `adlybinbakran@gmail.com` has Firebase UID `kjk86LonpVfk83NfpajQrhGxvOv1`. Admin access is pinned to that UID in `public/store.js` and `database.rules.json`. Existing Firebase Authentication accounts continue to work.
+5. Wait for the GitHub Pages workflow to finish, refresh the website, and sign in. There is no Cloud Function deployment step.
+6. As administrator, open Administration. Select the separately supplied private `KCC-students.json` import file, then click **Initialize / import students**. This imports the 74 students and initializes receipt numbering to `KCC0152`. Repeating import preserves existing records.
 
-Firebase Hosting: https://kcc-pos.web.app
-GitHub Pages: https://itlegend-co.github.io/KCC-Pos/
-These addresses become usable only after their respective deployments succeed.
+The student import is included in the previously supplied setup ZIP under `private-import/`. Keep it out of this public repository. No invented payments or financial history are seeded.
+
+Optional CLI rules deployment: with an authorized Firebase account, run `npx firebase-tools login` followed by `npx firebase-tools deploy --project kcc-pos --only database`. The Console publish route does not require Node.js or a billing upgrade.
 
 ## Daily operation
 
-- Staff create an account, verify their email, then wait for administrator approval. Pending/rejected accounts cannot read club data or write payments.
-- Admin and approved staff add students and record each daily payment with date, amount, payment method, and optional reference. No invented payments or financial history are seeded.
-- Select a reporting month to view totals. At month end, save a student’s monthly receipt, or save all ready receipts. Review all payments before closing.
-- Saving uses a Firestore transaction to allocate a unique receipt number and prevent duplicate student/month receipts. Closed student/month records block further daily payments. A retry returns the same receipt.
-- Receipt PDF follows the attached KCC bilingual template: club logo, registration number, official receipt heading, number/date, received from, amount in words, payment description, amount and issuer. A second page itemizes daily payments. Download, print, or share using browser file sharing; unsupported browsers download the file for attachment.
-- Only the administrator can correct a saved receipt total, with a mandatory reason. Original daily payments remain intact, and the audit log records original/revised amounts and actor. The corrected PDF clearly shows both totals and the reason. Staff cannot edit saved amounts.
-- Admin can approve/revoke staff and change numbering using `{SEQ}`, `{YYYY}`, `{MM}`. Previously used receipt numbers cannot be reused, even after changing the sequence.
-- Export the selected month’s daily payment register as CSV.
+- Staff create an account and verify their email. Admin approves them in Administration before they can access club data or manage students/payments. Admin can revoke access.
+- Admin and approved staff can add students. Record payments by date, amount, Cash/QR/Bank transfer/Cheque, and optional reference.
+- Select a reporting month. The daily register and monthly totals use payment dates in Malaysia, not UTC timestamps.
+- At month end, review the payments and save an individual receipt, or save all ready receipts. Saving closes that student’s month. Further daily entries for the closed student/month are blocked.
+- The PDF follows the supplied KCC bilingual layout with the club logo and registration number, receipt number/date, payer, amount in words, payment description, total, and issuer. A second page lists daily payments. Download, print, or share the PDF. Browsers without file sharing download it for attachment in WhatsApp/email.
+- Only the administrator can correct a saved receipt total. A reason and immutable correction record are required. Original payments and the original receipt total remain available; the PDF shows the revised total and reason.
+- Admin changes numbering using one `{SEQ}` with optional `{YYYY}` and `{MM}`, a next number, and digit padding. Existing receipt numbers remain unchanged. Previously reserved numbers are never reused. Numbers can be skipped after interrupted or competing requests; retries use the same student/month allocation.
+- Export the selected month’s daily register as CSV.
 
-## Design and security
+## Data and permission model
 
-All writes run through authenticated Firebase callable functions. Firestore rules allow only approved staff reads and deny every direct client write. Admin is pinned to the supplied UID, independent of editable profile fields. Amounts are stored as integer cents. Payment retries reuse a request ID to avoid duplicates. Receipts are explicit month-end saves; there is no automatic scheduled issuance or automatic delivery to students.
+| Path | Purpose |
+| --- | --- |
+| `users/{uid}` | Pending/approved/rejected staff profiles; admin-only approval |
+| `students/{id}` | Student directory; creation by admin/approved staff |
+| `events/{month}/{studentId}/{eventId}` | Immutable payment events with previous-event links and running totals |
+| `ledger/{month}/{studentId}` | Committed payment head and total; saved receipt and revision |
+| `numbering` | Admin format/settings and transactional sequence counter |
+| `numbers/{number}` | Permanent unique receipt-number reservations |
+| `allocations/{month_studentId}` | One permanent number allocation per student/month |
+| `corrections/{id}` | Immutable administrator correction events |
 
-The public Firebase web configuration is intentionally included. It is not an administrative credential. Never add Firebase service account keys, passwords, or billing credentials to this repository.
+Payment event creation validates its amount and running total against the committed ledger. A transaction then advances the ledger only if the previous head still matches. Concurrent attempts retry against the new head. Events that lose a race are uncommitted candidates and are excluded from registers, receipts and totals. Saved receipts freeze the ledger head. Receipt amounts must match that ledger when issued. Admin corrections require a matching immutable audit event. Rules enforce these relationships independently of the interface.
 
-The attached template is a layout reference, not a workbook to execute. The logo is included as a PNG asset. No VBA is executed. The static client uses Firebase SDK 12.3.0 and jsPDF 2.5.2 from CDNs.
+The app checks an unauthenticated probe before profile setup and refuses to initialize if the database is still in public test mode. The database root denies access. Anonymous, pending, revoked and unverified staff cannot read club records. Clients cannot grant themselves approval, change admin-only numbering settings, edit/delete payment events, alter saved receipt amounts as staff, or delete saved receipts. Payment events, number reservations, allocations and correction events are append-only.
+
+Receipts are saved explicitly at month end; there is no automatic monthly scheduler or automatic delivery to students. The public Firebase web configuration is not an admin credential. Never commit passwords or service account keys.
+
+## Existing data
+
+The old Firestore version did not have an operational profile function in this session, so no successful POS entries were observed. Existing Realtime Database content was empty when checked before conversion. The conversion does not erase either database. If you independently entered Firestore payments, those need a separate migration; this version does not import Firestore data automatically.
 
 ## Validation
 
-`npm test` checks cents, calendar cutoffs, numbering, and the student student import. `npm run check` checks JavaScript syntax. Live sign-in, deployed rules/function permissions, concurrent receipt transactions, browser PDF behavior, and actual sharing/printing must be verified in the deployed Firebase project. A Firebase config alone does not grant database/admin deployment access.
+Run `npm test` and `npm run check` for local model and syntax checks. The security integration tests execute the production store against Firebase's Realtime Database emulator and verify account approval, immutable data, monthly totals, idempotent requests, receipt numbering, corrections, concurrent writes and revocation.
 
-A two-page receipt generated with the production PDF renderer was rendered and visually inspected with example data. This verifies the static PDF layout, not live browser sharing or printing.
+To repeat the integration tests, install dev dependencies with `npm ci`, install Java 17 or newer, then run:
 
-## Realtime Database rules
+```
+npx firebase-tools@14.22.0 emulators:exec --only database --project demo-kcc-pos "npm run test:rules"
+```
 
-This application uses Cloud Firestore. It does not store POS data in Realtime Database. If Realtime Database is enabled, paste `database.rules.json` into Firebase Console > Realtime Database > Rules and publish it to deny all client access to that unused database. These rules do not replace `firestore.rules`, and enabling Realtime Database alone will not activate this POS.
+The GitHub workflow runs the same checks before deployment. The existing two-page PDF renderer was visually inspected with example data. Actual browser file sharing/printing and production Firebase permissions require verification after publishing the rules. Code deployment does not publish Firebase rules automatically.

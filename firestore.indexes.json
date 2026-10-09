@@ -1,1 +1,0 @@
-{"indexes":[{"collectionGroup":"payments","queryScope":"COLLECTION","fields":[{"fieldPath":"studentId","order":"ASCENDING"},{"fieldPath":"month","order":"ASCENDING"}]}],"fieldOverrides":[]}

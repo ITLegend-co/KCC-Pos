@@ -26,10 +26,11 @@ The importer requires a full name and school, ignores empty rows, and skips dupl
 ## Daily operation
 
 - Staff create an account and verify their email. Admin approves them in Administration before they can access club data or manage students/payments. Admin can revoke access.
-- Admin and approved staff can add students. Record payments by date, amount, Cash/QR/Bank transfer/Cheque, and optional reference.
+- Admin and approved staff can add students. Admin can delete a student from active selection and restore them using **Show deleted students**. Historical names, payments and receipts are retained. New payments for deleted students are blocked. Record payments by date, amount, Cash/QR/Bank transfer/Cheque, and optional reference.
 - Select a reporting month. The daily register and monthly totals use payment dates in Malaysia, not UTC timestamps.
 - At month end, review the payments and save an individual receipt, or save all ready receipts. Saving closes that student’s month. Further daily entries for the closed student/month are blocked.
 - The PDF follows the supplied KCC bilingual layout with the club logo and registration number, receipt number/date, payer, amount in words, payment description, total, and issuer. A second page lists daily payments. Download, print, or share the PDF. Browsers without file sharing download it for attachment in WhatsApp/email.
+- In **Daily payments**, admin can click **Edit** to correct the date (within its original month), amount, method and reference. A reason is required. Daily totals and PDFs use the committed corrections. If a receipt has already been saved, its total changes by the payment amount difference and its revision increases. Any previous separate receipt adjustment is preserved. Original payment events and correction records remain immutable.
 - Only the administrator can correct a saved receipt total. A reason and immutable correction record are required. Original payments and the original receipt total remain available; the PDF shows the revised total and reason.
 - Admin changes numbering using one `{SEQ}` with optional `{YYYY}` and `{MM}`, a next number, and digit padding. Existing receipt numbers remain unchanged. Previously reserved numbers are never reused. Numbers can be skipped after interrupted or competing requests; retries use the same student/month allocation.
 - Export the selected month’s daily register as CSV.
@@ -40,6 +41,7 @@ The importer requires a full name and school, ignores empty rows, and skips dupl
 | --- | --- |
 | `users/{uid}` | Pending/approved/rejected staff profiles; admin-only approval |
 | `students/{id}` | Student directory; creation by admin/approved staff |
+| `paymentChanges/{month}/{studentId}/{changeId}` | Immutable admin daily-payment corrections, committed by the ledger edit head |
 | `events/{month}/{studentId}/{eventId}` | Immutable payment events with previous-event links and running totals |
 | `ledger/{month}/{studentId}` | Committed payment head and total; saved receipt and revision |
 | `numbering` | Admin format/settings and transactional sequence counter |
@@ -68,3 +70,5 @@ npx firebase-tools@14.22.0 emulators:exec --only database --project demo-kcc-pos
 ```
 
 The GitHub workflow runs the same checks before deployment. The existing two-page PDF renderer was visually inspected with example data. Actual browser file sharing/printing and production Firebase permissions require verification after publishing the rules. Code deployment does not publish Firebase rules automatically.
+
+After this update, publish the updated `database.rules.json` in Firebase Realtime Database → Rules. The old rules do not permit payment changes or student deletion markers. GitHub Pages deployment does not publish Firebase rules.

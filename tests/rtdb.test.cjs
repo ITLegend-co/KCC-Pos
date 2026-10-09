@@ -27,6 +27,30 @@ await step('admin corrections require audit and preserve original amount',async(
 await step('concurrent payments retain every committed amount',async()=>{await Promise.all([staff.store.call('addPayment',payment('request-con01',2,'2026-10-02','S2')),staff.store.call('addPayment',payment('request-con02',3,'2026-10-02','S2'))]);assert.equal((await staff.db.ref('ledger/2026-10/S2/totalCents').get()).val(),500);});
 await step('concurrent receipt issuance returns one number per student-month',async()=>{const r=await Promise.all([staff.store.call('issueReceipt',{studentId:'S2',month:'2026-10'}),staff.store.call('issueReceipt',{studentId:'S2',month:'2026-10'})]);assert.equal(r[0].number,r[1].number);assert.notEqual(r[0].number,receipt.number);});
 await step('admin numbering format and permanent number uniqueness',async()=>{await admin.store.call('saveSettings',{format:'KCC-{YYYY}-{MM}-{SEQ}',next:1,padding:4});const r=await staff.store.call('issueReceipt',{studentId:'S1',month:'2026-11'});assert.equal(r.number,'KCC-2026-11-0001');await assertFails(staff.db.ref('numbers/KCC0152').set({}));});
+await step('admin edits daily payment, preserves originals and revises closed receipt',async()=>{
+ const before=(await staff.db.ref('ledger/2026-10/S1').get()).val(),events=(await staff.db.ref('events/2026-10/S1').get()).val(),id=Object.keys(events).find(id=>events[id].requestId==='request-00001');
+ const edit={studentId:'S1',month:'2026-10',paymentId:id,date:'2026-10-03',amount:10.6,method:'QR',reference:'Fixed reference',reason:'Correct entry'};
+ await assert.rejects(staff.store.call('editPayment',edit),/Administrator/);
+ await admin.store.call('editPayment',edit);
+ const after=(await staff.db.ref('ledger/2026-10/S1').get()).val();assert.equal(after.totalCents,1300);assert.equal(after.receipt.totalCents,1500);assert.equal(after.receipt.originalTotalCents,1200);assert.equal(after.receipt.number,before.receipt.number);assert.equal(after.receipt.revision,3);
+ assert.equal((await staff.db.ref('events/2026-10/S1/'+id+'/amountCents').get()).val(),960);
+ await assertFails(staff.db.ref('ledger/2026-10/S1/editHead').set('fake'));await assertFails(staff.db.ref('ledger/2026-10/S1/editHead').remove());
+ await assertFails(admin.db.ref('paymentChanges/2026-10/S1/'+after.editHead).remove());
+ await admin.store.call('editPayment',{...edit,amount:11.6});assert.equal((await staff.db.ref('ledger/2026-10/S1/totalCents').get()).val(),1400);
+ await assert.rejects(admin.store.call('editPayment',{...edit,date:'2026-11-01'}),/reporting month/);
+});
+await step('edited open month keeps totals when staff adds another payment',async()=>{
+ await staff.store.call('addPayment',payment('open-edit-01',2,'2026-12-01','S2'));const l=(await staff.db.ref('ledger/2026-12/S2').get()).val();
+ await admin.store.call('editPayment',{studentId:'S2',month:'2026-12',paymentId:l.head,date:'2026-12-02',amount:3,method:'Cash',reference:'',reason:'Correct amount'});
+ await staff.store.call('addPayment',payment('open-edit-02',4,'2026-12-03','S2'));const after=(await staff.db.ref('ledger/2026-12/S2').get()).val();assert.equal(after.totalCents,700);assert.ok(after.editHead);
+ const r=await staff.store.call('issueReceipt',{studentId:'S2',month:'2026-12'});assert.equal(r.totalCents,700);assert.equal(r.items.reduce((n,p)=>n+p.amountCents,0),700);
+});
+await step('only admin deletes and restores students, preserving historical records',async()=>{
+ await assert.rejects(staff.store.call('deleteStudent',{studentId:'S2'}),/Administrator/);await assertFails(staff.db.ref('students/S2').remove());await assertFails(staff.db.ref('students/S2/deleted').set(true));
+ await admin.store.call('deleteStudent',{studentId:'S2'});assert.equal((await staff.db.ref('students/S2/deleted').get()).val(),true);assert.equal((await staff.db.ref('students/S2/name').get()).val(),'Another Student');assert.ok((await staff.db.ref('ledger/2026-12/S2/receipt').get()).val());
+ await assert.rejects(staff.store.call('addPayment',payment('deleted-add',1,'2027-01-01','S2')),/deleted/);await assertFails(admin.db.ref('students/S2').remove());
+ await admin.store.call('deleteStudent',{studentId:'S2',restore:true});await staff.store.call('addPayment',payment('restored-add',1,'2027-01-01','S2'));
+});
 await step('revoked staff lose reads and writes',async()=>{await admin.store.call('reviewUser',{uid:'staff',status:'rejected'});await assertFails(staff.db.ref('students').get());await assert.rejects(staff.store.call('addStudent',{name:'Example',school:'School'}));});
 await env.cleanup();console.log('ALL REALTIME RULES CHECKS PASSED');process.exit(0);
 })().catch(e=>{console.error(e);process.exit(1)});

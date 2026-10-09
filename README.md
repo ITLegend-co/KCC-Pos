@@ -27,6 +27,7 @@ The importer requires a full name and school, ignores empty rows, and skips dupl
 
 - Staff create an account and verify their email. Admin approves them in Administration before they can access club data or manage students/payments. Admin can revoke access.
 - Admin and approved staff can add students. Admin can delete a student from active selection and restore them using **Show deleted students**. Historical names, payments and receipts are retained. New payments for deleted students are blocked. Record payments by date, amount, Cash/QR/Bank transfer/Cheque, and optional reference.
+- The Daily payments page shows the total for a selected date and the total for the reporting month, with payment counts. Both include all students and reflect admin payment corrections. Changing the reporting month keeps the daily date within that month.
 - Select a reporting month. The daily register and monthly totals use payment dates in Malaysia, not UTC timestamps.
 - At month end, review the payments and save an individual receipt, or save all ready receipts. Saving closes that student’s month. Further daily entries for the closed student/month are blocked.
 - The PDF follows the supplied KCC bilingual layout with the club logo and registration number, receipt number/date, payer, amount in words, payment description, total, and issuer. A second page lists daily payments. Download, print, or share the PDF. Browsers without file sharing download it for attachment in WhatsApp/email.

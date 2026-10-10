@@ -99,3 +99,13 @@ In **Daily payments**, only admin sees **Void** and **Refund** next to an active
 - A voided/refunded payment cannot be edited, voided again or refunded again through the application. Competing actions commit only one ledger amendment. Daily collection totals show historical money received, excluding voids; refund expenses appear in Treasury. The payment CSV includes status, reason, refund date, amount and account.
 
 Publish the updated Realtime Database rules before using these actions. Security rules permit action records only for the pinned admin and validate void amounts, refund metadata, and linked ledger/receipt revisions.
+
+## Staff requests for voids and refunds
+
+Approved, verified staff can select **Request void** or **Request refund** in Daily payments. They enter a reason; their full name, payment/category/month and current amount are saved in an immutable request. No collection, receipt or treasury amount changes at submission.
+
+Admin reviews all requests in **Administration → Void / refund review**, including requests from other months, and records an immutable approval or rejection with notes. Approval alone does not move money or change totals. Admin then selects **Process approved void/refund**. Refund processing requires the actual return date and cash/CIMB paying account. The system records a refund already paid; it does not initiate a CIMB transfer. Staff see their request’s status in Daily payments.
+
+Processing still uses the existing admin-only audited payment actions. It checks the exact requested payment, action, category and amount against approval. A changed, voided or already-refunded payment cannot be processed again. A committed payment-change record links to its request ID; the status is derived from the committed audit chain, so uncommitted candidates cannot appear processed. Direct admin actions remain available. Rejected reviews cannot be overwritten; submit a new request if appropriate.
+
+Publish the updated Realtime Database rules before use. Approved staff can create requests, but only the pinned administrator can review them or process financial actions.

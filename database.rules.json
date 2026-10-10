@@ -372,6 +372,9 @@
             },
             "refundAccount": {
               ".validate": "newData.val() == 'cash' || newData.val() == 'bank'"
+            },
+            "requestId": {
+              ".validate": "newData.isString() && root.child('paymentRequestReviews').child(newData.val()).child('decision').val() == 'approved' && root.child('paymentRequests').child(newData.val()).child('category').val() == 'training' && root.child('paymentRequests').child(newData.val()).child('studentId').val() == $studentId && root.child('paymentRequests').child(newData.val()).child('month').val() == $month && root.child('paymentRequests').child(newData.val()).child('paymentId').val() == newData.parent().child('paymentId').val() && root.child('paymentRequests').child(newData.val()).child('action').val() == newData.parent().child('action').val() && root.child('paymentRequests').child(newData.val()).child('amountCents').val() == newData.parent().child('beforeCents').val()"
             }
           }
         }
@@ -553,6 +556,9 @@
             },
             "refundAccount": {
               ".validate": "newData.val() == 'cash' || newData.val() == 'bank'"
+            },
+            "requestId": {
+              ".validate": "newData.isString() && root.child('paymentRequestReviews').child(newData.val()).child('decision').val() == 'approved' && root.child('paymentRequests').child(newData.val()).child('category').val() == 'insurance' && root.child('paymentRequests').child(newData.val()).child('studentId').val() == $studentId && root.child('paymentRequests').child(newData.val()).child('month').val() == $month && root.child('paymentRequests').child(newData.val()).child('paymentId').val() == newData.parent().child('paymentId').val() && root.child('paymentRequests').child(newData.val()).child('action').val() == newData.parent().child('action').val() && root.child('paymentRequests').child(newData.val()).child('amountCents').val() == newData.parent().child('beforeCents').val()"
             }
           }
         }
@@ -733,6 +739,74 @@
         },
         "at": {
           ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40"
+        },
+        "$other": {
+          ".validate": "false"
+        }
+      }
+    },
+    "paymentRequests": {
+      ".read": "auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))",
+      "$id": {
+        ".write": "(auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))) && !data.exists() && newData.exists()",
+        ".validate": "newData.hasChildren(['studentId','month','paymentId','category','action','amountCents','paymentDate','account','reason','createdBy','createdByName','at']) && root.child(newData.child('category').val() == 'insurance' ? 'insuranceEvents' : 'events').child(newData.child('month').val()).child(newData.child('studentId').val()).child(newData.child('paymentId').val()).exists()",
+        "studentId": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+        },
+        "month": {
+          ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}-(0[1-9]|1[0-2])$/)"
+        },
+        "paymentId": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+        },
+        "category": {
+          ".validate": "newData.val() == 'training' || newData.val() == 'insurance'"
+        },
+        "action": {
+          ".validate": "newData.val() == 'void' || newData.val() == 'refund'"
+        },
+        "amountCents": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 1 && newData.val() <= 10000000"
+        },
+        "reason": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 400"
+        },
+        "createdBy": {
+          ".validate": "newData.val() == auth.uid"
+        },
+        "createdByName": {
+          ".validate": "newData.isString() && newData.val() == root.child('users').child(auth.uid).child('name').val()"
+        },
+        "at": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+        },
+        "$other": {
+          ".validate": "false"
+        },
+        "paymentDate": {
+          ".validate": "newData.isString() && newData.val().beginsWith(newData.parent().child('month').val() + '-') && newData.val().matches(/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)"
+        },
+        "account": {
+          ".validate": "newData.val() == 'cash' || newData.val() == 'bank'"
+        }
+      }
+    },
+    "paymentRequestReviews": {
+      ".read": "auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))",
+      "$id": {
+        ".write": "(auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1') && !data.exists() && newData.exists()",
+        ".validate": "newData.hasChildren(['decision','reason','by','at']) && root.child('paymentRequests').child($id).exists()",
+        "decision": {
+          ".validate": "newData.val() == 'approved' || newData.val() == 'rejected'"
+        },
+        "reason": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 400"
+        },
+        "by": {
+          ".validate": "newData.val() == auth.uid"
+        },
+        "at": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
         },
         "$other": {
           ".validate": "false"

@@ -73,7 +73,7 @@
       "$month": {
         "$studentId": {
           "$eventId": {
-            ".validate": "newData.hasChildren([\"studentId\", \"month\", \"date\", \"amountCents\", \"method\", \"reference\", \"requestId\", \"previous\", \"totalCents\", \"createdBy\", \"createdAt\"])",
+            ".validate": "newData.hasChildren([\"studentId\", \"month\", \"date\", \"amountCents\", \"method\", \"reference\", \"requestId\", \"previous\", \"totalCents\", \"createdBy\", \"createdAt\", \"receivedByName\", \"account\"])",
             "studentId": {
               ".validate": "newData.val() == $studentId"
             },
@@ -110,7 +110,13 @@
             "$other": {
               ".validate": false
             },
-            ".write": "(auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))) && !data.exists() && newData.exists() && !root.child('ledger').child($month).child($studentId).child('receipt').exists() && root.child('students').child($studentId).exists() && root.child('students').child($studentId).child('deleted').val() != true"
+            ".write": "(auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))) && !data.exists() && newData.exists() && !root.child('ledger').child($month).child($studentId).child('receipt').exists() && root.child('students').child($studentId).exists() && root.child('students').child($studentId).child('deleted').val() != true",
+            "account": {
+              ".validate": "newData.val() == 'bank' || newData.val() == 'cash'"
+            },
+            "receivedByName": {
+              ".validate": "newData.isString() && newData.val() == root.child('users').child(auth.uid).child('name').val()"
+            }
           }
         }
       }
@@ -172,7 +178,7 @@
         "$other": {
           ".validate": false
         },
-        ".write": "(auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))) && !data.exists() && newData.exists()",
+        ".write": "((auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))) && !data.exists() && newData.exists()) && !newData.child('category').exists()",
         "category": {
           ".validate": "newData.val() == 'insurance'"
         }
@@ -197,7 +203,7 @@
         "$other": {
           ".validate": false
         },
-        ".write": "(auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))) && !data.exists() && newData.exists()",
+        ".write": "((auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))) && !data.exists() && newData.exists()) && !newData.child('category').exists()",
         "category": {
           ".validate": "newData.val() == 'insurance'"
         }
@@ -354,6 +360,9 @@
             },
             "$other": {
               ".validate": false
+            },
+            "account": {
+              ".validate": "newData.val() == 'bank' || newData.val() == 'cash'"
             }
           }
         }
@@ -364,7 +373,7 @@
       "$month": {
         "$studentId": {
           "$eventId": {
-            ".validate": "newData.hasChildren([\"studentId\", \"month\", \"date\", \"amountCents\", \"method\", \"reference\", \"requestId\", \"previous\", \"totalCents\", \"createdBy\", \"createdAt\"])",
+            ".validate": "newData.hasChildren([\"studentId\", \"month\", \"date\", \"amountCents\", \"method\", \"reference\", \"requestId\", \"previous\", \"totalCents\", \"createdBy\", \"createdAt\", \"receivedByName\", \"account\"])",
             "studentId": {
               ".validate": "newData.val() == $studentId"
             },
@@ -401,7 +410,13 @@
             "$other": {
               ".validate": false
             },
-            ".write": "(auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))) && !data.exists() && newData.exists() && !root.child('insuranceLedger').child($month).child($studentId).child('receipt').exists() && root.child('students').child($studentId).exists() && root.child('students').child($studentId).child('deleted').val() != true"
+            ".write": "(auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))) && !data.exists() && newData.exists() && root.child('students').child($studentId).exists() && root.child('students').child($studentId).child('deleted').val() != true",
+            "account": {
+              ".validate": "newData.val() == 'bank' || newData.val() == 'cash'"
+            },
+            "receivedByName": {
+              ".validate": "newData.isString() && newData.val() == root.child('users').child(auth.uid).child('name').val()"
+            }
           }
         }
       }
@@ -410,7 +425,7 @@
       ".read": "auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))",
       "$month": {
         "$studentId": {
-          ".validate": "(((newData.hasChildren([\"studentId\", \"month\", \"head\", \"totalCents\"]) && ($month.matches(/^[0-9]{4}-(0[1-9]|1[0-2])$/) && (!data.child('receipt').exists() || newData.child('receipt').exists()) && ((data.exists() && newData.child('head').val() == data.child('head').val() && newData.child('totalCents').val() == data.child('totalCents').val()) || (!data.child('receipt').exists() && !newData.child('receipt').exists() && root.child('insuranceEvents').child($month).child($studentId).child(newData.child('head').val()).exists() && root.child('insuranceEvents').child($month).child($studentId).child(newData.child('head').val()).child('previous').val() == (data.child('head').exists() ? data.child('head').val() : 'origin') && root.child('insuranceEvents').child($month).child($studentId).child(newData.child('head').val()).child('totalCents').val() == newData.child('totalCents').val())))) && newData.child('editHead').val() == data.child('editHead').val()) || ((auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1') && data.exists() && newData.child('head').val() == data.child('head').val() && root.child('insurancePaymentChanges').child($month).child($studentId).child(newData.child('editHead').val()).exists() && root.child('insurancePaymentChanges').child($month).child($studentId).child(newData.child('editHead').val()).child('ledgerHead').val() == data.child('head').val() && root.child('insurancePaymentChanges').child($month).child($studentId).child(newData.child('editHead').val()).child('previous').val() == (data.child('editHead').exists() ? data.child('editHead').val() : 'origin') && newData.child('totalCents').val() == data.child('totalCents').val() + root.child('insurancePaymentChanges').child($month).child($studentId).child(newData.child('editHead').val()).child('afterCents').val() - root.child('insurancePaymentChanges').child($month).child($studentId).child(newData.child('editHead').val()).child('beforeCents').val() && (!data.child('receipt').exists() || (newData.child('receipt').exists() && newData.child('receipt').child('revision').val() == data.child('receipt').child('revision').val() + 1 && newData.child('receipt').child('totalCents').val() == data.child('receipt').child('totalCents').val() + root.child('insurancePaymentChanges').child($month).child($studentId).child(newData.child('editHead').val()).child('afterCents').val() - root.child('insurancePaymentChanges').child($month).child($studentId).child(newData.child('editHead').val()).child('beforeCents').val())))) && (newData.child('head').val() == data.child('head').val() || (root.child('students').child($studentId).child('deleted').val() != true && newData.child('totalCents').val() == (data.child('totalCents').exists() ? data.child('totalCents').val() : 0) + root.child('insuranceEvents').child($month).child($studentId).child(newData.child('head').val()).child('amountCents').val()))",
+          ".validate": "(((newData.hasChildren([\"studentId\", \"month\", \"head\", \"totalCents\"]) && ($month.matches(/^[0-9]{4}-(0[1-9]|1[0-2])$/) && (!data.child('receipt').exists() || newData.child('receipt').exists()) && ((data.exists() && newData.child('head').val() == data.child('head').val() && newData.child('totalCents').val() == data.child('totalCents').val()) || (root.child('insuranceEvents').child($month).child($studentId).child(newData.child('head').val()).exists() && root.child('insuranceEvents').child($month).child($studentId).child(newData.child('head').val()).child('previous').val() == (data.child('head').exists() ? data.child('head').val() : 'origin') && root.child('insuranceEvents').child($month).child($studentId).child(newData.child('head').val()).child('totalCents').val() == newData.child('totalCents').val())))) && newData.child('editHead').val() == data.child('editHead').val()) || ((auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1') && data.exists() && newData.child('head').val() == data.child('head').val() && root.child('insurancePaymentChanges').child($month).child($studentId).child(newData.child('editHead').val()).exists() && root.child('insurancePaymentChanges').child($month).child($studentId).child(newData.child('editHead').val()).child('ledgerHead').val() == data.child('head').val() && root.child('insurancePaymentChanges').child($month).child($studentId).child(newData.child('editHead').val()).child('previous').val() == (data.child('editHead').exists() ? data.child('editHead').val() : 'origin') && newData.child('totalCents').val() == data.child('totalCents').val() + root.child('insurancePaymentChanges').child($month).child($studentId).child(newData.child('editHead').val()).child('afterCents').val() - root.child('insurancePaymentChanges').child($month).child($studentId).child(newData.child('editHead').val()).child('beforeCents').val() && (!data.child('receipt').exists() || (newData.child('receipt').exists() && newData.child('receipt').child('revision').val() == data.child('receipt').child('revision').val() + 1 && newData.child('receipt').child('totalCents').val() == data.child('receipt').child('totalCents').val() + root.child('insurancePaymentChanges').child($month).child($studentId).child(newData.child('editHead').val()).child('afterCents').val() - root.child('insurancePaymentChanges').child($month).child($studentId).child(newData.child('editHead').val()).child('beforeCents').val())))) && (newData.child('head').val() == data.child('head').val() || (root.child('students').child($studentId).child('deleted').val() != true && newData.child('totalCents').val() == (data.child('totalCents').exists() ? data.child('totalCents').val() : 0) + root.child('insuranceEvents').child($month).child($studentId).child(newData.child('head').val()).child('amountCents').val()))",
           "studentId": {
             ".validate": "newData.val() == $studentId"
           },
@@ -428,7 +443,7 @@
           },
           ".write": "(auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))) && newData.exists()",
           "receipt": {
-            ".validate": "newData.hasChildren([\"number\", \"name\", \"school\", \"totalCents\", \"originalTotalCents\", \"revision\", \"issuedAt\", \"issuedBy\", \"lastCorrectionId\"]) && ((!data.exists() && newData.child('revision').val() == 1 && newData.child('totalCents').val() == newData.parent().child('totalCents').val() && newData.child('lastCorrectionId').val() == 'origin' && !newData.child('correctionReason').exists() && !newData.child('correctedBy').exists() && !newData.child('correctedAt').exists()) || (data.exists() && newData.child('totalCents').val() == data.child('totalCents').val() && newData.child('revision').val() == data.child('revision').val() && newData.child('lastCorrectionId').val() == data.child('lastCorrectionId').val() && newData.child('correctionReason').val() == data.child('correctionReason').val() && newData.child('correctedAt').val() == data.child('correctedAt').val() && newData.child('correctedBy').val() == data.child('correctedBy').val()) || (data.exists() && (auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1') && newData.child('revision').val() == data.child('revision').val() + 1 && root.child('insuranceCorrections').child(newData.child('lastCorrectionId').val()).child('previous').val() == data.child('lastCorrectionId').val() && root.child('insuranceCorrections').child(newData.child('lastCorrectionId').val()).child('beforeCents').val() == data.child('totalCents').val() && root.child('insuranceCorrections').child(newData.child('lastCorrectionId').val()).child('afterCents').val() == newData.child('totalCents').val() && root.child('insuranceCorrections').child(newData.child('lastCorrectionId').val()).child('revision').val() == newData.child('revision').val() && root.child('insuranceCorrections').child(newData.child('lastCorrectionId').val()).child('studentId').val() == $studentId && root.child('insuranceCorrections').child(newData.child('lastCorrectionId').val()).child('month').val() == $month && newData.child('correctionReason').val() == root.child('insuranceCorrections').child(newData.child('lastCorrectionId').val()).child('reason').val() && newData.child('correctedAt').val() == root.child('insuranceCorrections').child(newData.child('lastCorrectionId').val()).child('at').val() && newData.child('correctedBy').val() == auth.uid))",
+            ".validate": "data.exists() && (newData.hasChildren([\"number\", \"name\", \"school\", \"totalCents\", \"originalTotalCents\", \"revision\", \"issuedAt\", \"issuedBy\", \"lastCorrectionId\"]) && ((!data.exists() && newData.child('revision').val() == 1 && newData.child('totalCents').val() == newData.parent().child('totalCents').val() && newData.child('lastCorrectionId').val() == 'origin' && !newData.child('correctionReason').exists() && !newData.child('correctedBy').exists() && !newData.child('correctedAt').exists()) || (data.exists() && newData.child('totalCents').val() == data.child('totalCents').val() && newData.child('revision').val() == data.child('revision').val() && newData.child('lastCorrectionId').val() == data.child('lastCorrectionId').val() && newData.child('correctionReason').val() == data.child('correctionReason').val() && newData.child('correctedAt').val() == data.child('correctedAt').val() && newData.child('correctedBy').val() == data.child('correctedBy').val()) || (data.exists() && (auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1') && newData.child('revision').val() == data.child('revision').val() + 1 && root.child('insuranceCorrections').child(newData.child('lastCorrectionId').val()).child('previous').val() == data.child('lastCorrectionId').val() && root.child('insuranceCorrections').child(newData.child('lastCorrectionId').val()).child('beforeCents').val() == data.child('totalCents').val() && root.child('insuranceCorrections').child(newData.child('lastCorrectionId').val()).child('afterCents').val() == newData.child('totalCents').val() && root.child('insuranceCorrections').child(newData.child('lastCorrectionId').val()).child('revision').val() == newData.child('revision').val() && root.child('insuranceCorrections').child(newData.child('lastCorrectionId').val()).child('studentId').val() == $studentId && root.child('insuranceCorrections').child(newData.child('lastCorrectionId').val()).child('month').val() == $month && newData.child('correctionReason').val() == root.child('insuranceCorrections').child(newData.child('lastCorrectionId').val()).child('reason').val() && newData.child('correctedAt').val() == root.child('insuranceCorrections').child(newData.child('lastCorrectionId').val()).child('at').val() && newData.child('correctedBy').val() == auth.uid)))",
             "number": {
               ".validate": "newData.isString() && (data.exists() ? newData.val() == data.val() : newData.val() == root.child('allocations').child($month + '_' + $studentId + '_insurance').child('number').val())"
             },
@@ -517,6 +532,9 @@
             },
             "$other": {
               ".validate": false
+            },
+            "account": {
+              ".validate": "newData.val() == 'bank' || newData.val() == 'cash'"
             }
           }
         }
@@ -560,6 +578,147 @@
           ".validate": false
         },
         ".write": "(auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1') && !data.exists() && newData.exists()"
+      }
+    },
+    "treasuryOpening": {
+      ".read": "auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1'",
+      ".write": "(auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1') && !data.exists() && newData.exists()",
+      ".validate": "newData.hasChildren([\"date\", \"bankCents\", \"cashCents\", \"by\", \"at\"])",
+      "date": {
+        ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}-(0[1-9]|1[0-2])-01$/)"
+      },
+      "bankCents": {
+        ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= 10000000000"
+      },
+      "cashCents": {
+        ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= 10000000000"
+      },
+      "by": {
+        ".validate": "newData.val() == auth.uid"
+      },
+      "at": {
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40"
+      },
+      "$other": {
+        ".validate": "false"
+      }
+    },
+    "treasuryTransactions": {
+      ".read": "auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1'",
+      "$id": {
+        ".write": "(auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1') && !data.exists() && newData.exists()",
+        ".validate": "newData.hasChildren([\"date\", \"type\", \"account\", \"toAccount\", \"amountCents\", \"category\", \"description\", \"reference\", \"by\", \"at\"])",
+        "date": {
+          ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)"
+        },
+        "type": {
+          ".validate": "newData.val() == 'income' || newData.val() == 'expense' || newData.val() == 'transfer'"
+        },
+        "account": {
+          ".validate": "newData.val() == 'bank' || newData.val() == 'cash'"
+        },
+        "toAccount": {
+          ".validate": "(newData.parent().child('type').val() == 'transfer' && (newData.val() == 'bank' || newData.val() == 'cash') && newData.val() != newData.parent().child('account').val()) || (newData.parent().child('type').val() != 'transfer' && newData.val() == 'none')"
+        },
+        "amountCents": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 1 && newData.val() <= 10000000"
+        },
+        "category": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 100"
+        },
+        "description": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 240"
+        },
+        "reference": {
+          ".validate": "newData.isString() && newData.val().length >= 0 && newData.val().length <= 120"
+        },
+        "by": {
+          ".validate": "newData.val() == auth.uid"
+        },
+        "at": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40"
+        },
+        "$other": {
+          ".validate": "false"
+        }
+      }
+    },
+    "treasuryVoids": {
+      ".read": "auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1'",
+      "$id": {
+        ".write": "(auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1') && !data.exists() && newData.exists()",
+        ".validate": "newData.hasChildren([\"reason\", \"by\", \"at\"]) && root.child('treasuryTransactions').child($id).exists()",
+        "reason": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 400"
+        },
+        "by": {
+          ".validate": "newData.val() == auth.uid"
+        },
+        "at": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40"
+        },
+        "$other": {
+          ".validate": "false"
+        }
+      }
+    },
+    "treasuryChecks": {
+      ".read": "auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1'",
+      "$id": {
+        ".write": "(auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1') && !data.exists() && newData.exists()",
+        ".validate": "newData.hasChildren([\"month\", \"bankCents\", \"cashCents\", \"note\", \"by\", \"at\"])",
+        "month": {
+          ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}-(0[1-9]|1[0-2])$/)"
+        },
+        "bankCents": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= -10000000000 && newData.val() <= 10000000000"
+        },
+        "cashCents": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= -10000000000 && newData.val() <= 10000000000"
+        },
+        "note": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 400"
+        },
+        "by": {
+          ".validate": "newData.val() == auth.uid"
+        },
+        "at": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40"
+        },
+        "$other": {
+          ".validate": "false"
+        }
+      }
+    },
+    "treasuryAssets": {
+      ".read": "auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1'",
+      "$id": {
+        ".write": "(auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1') && !data.exists() && newData.exists()",
+        ".validate": "newData.hasChildren([\"name\", \"quantity\", \"costCents\", \"location\", \"transactionId\", \"by\", \"at\"])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 160"
+        },
+        "quantity": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 1 && newData.val() <= 100000"
+        },
+        "costCents": {
+          ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= 10000000000"
+        },
+        "location": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 160"
+        },
+        "transactionId": {
+          ".validate": "newData.val() == 'none' || (newData.isString() && root.child('treasuryTransactions').child(newData.val()).child('type').val() == 'expense')"
+        },
+        "by": {
+          ".validate": "newData.val() == auth.uid"
+        },
+        "at": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40"
+        },
+        "$other": {
+          ".validate": "false"
+        }
       }
     }
   }

@@ -5,8 +5,8 @@ const ADMIN='kjk86LonpVfk83NfpajQrhGxvOv1';
 (async()=>{const env=await initializeTestEnvironment({projectId:'demo-kcc-pos',database:{host:'127.0.0.1',port:9000,rules:fs.readFileSync(require('node:path').join(__dirname,'../database.rules.json'),'utf8')}});await env.clearDatabase();
 function client(id,verified=true){const db=env.authenticatedContext(id,{email:id===ADMIN?'adlybinbakran@gmail.com':id+'@example.com',email_verified:verified}).database();let source=fs.readFileSync(require('node:path').join(__dirname,'../public/store.js'),'utf8').replace(/^import .*;\n/,'').replaceAll('export ','');const context={console,Date,crypto,TextEncoder,fetch:async()=>({status:403}),getDatabase:()=>db,ref:(_,p)=>db.ref(p||undefined),get:r=>r.get(),set:(r,d)=>r.set(d),update:(r,d)=>r.update(d),push:r=>r.push(),runTransaction:async(r,fn)=>r.transaction(fn,undefined,false),onValue:(r,fn,e)=>{r.on('value',fn,e);return()=>r.off('value',fn);}};vm.createContext(context);vm.runInContext(source,context);context.auth={currentUser:{uid:id,email:id===ADMIN?'adlybinbakran@gmail.com':id+'@example.com'}};return {db,store:vm.runInContext('createStore({},auth)',context)};}
 const admin=client(ADMIN),staff=client('staff'),pending=client('pending'),unverified=client('staff',false);const step=async(label,f)=>{console.log('RUN '+label);await f();console.log('PASS '+label);};
-await step('admin bootstrap and student import',async()=>{await admin.store.call('registerProfile');await admin.store.call('initializeClub',{students:[{id:'S1',name:'Example Student',school:'Example School'},{id:'S2',name:'Another Student',school:'Example School'}]});});
-await step('staff profiles cannot self-approve',async()=>{await staff.store.call('registerProfile');await pending.store.call('registerProfile');await assertFails(pending.db.ref('users/pending/status').set('approved'));await assertFails(pending.db.ref('users/pending/role').set('admin'));await admin.store.call('reviewUser',{uid:'staff',status:'approved'});await staff.store.call('registerProfile');});
+await step('admin bootstrap and student import',async()=>{await admin.store.call('registerProfile',{name:'Example Clerk'});await admin.store.call('initializeClub',{students:[{id:'S1',name:'Example Student',school:'Example School'},{id:'S2',name:'Another Student',school:'Example School'}]});});
+await step('staff profiles cannot self-approve',async()=>{await staff.store.call('registerProfile',{name:'Example Clerk'});await pending.store.call('registerProfile',{name:'Example Clerk'});await assertFails(pending.db.ref('users/pending/status').set('approved'));await assertFails(pending.db.ref('users/pending/role').set('admin'));await admin.store.call('reviewUser',{uid:'staff',status:'approved'});await staff.store.call('registerProfile',{name:'Example Clerk'});});
 await step('pending, unverified and public accounts cannot read club data',async()=>{await assertFails(pending.db.ref('students').get());await assertFails(unverified.db.ref('students').get());await assertFails(env.unauthenticatedContext().database().ref('students').get());await assertSucceeds(staff.db.ref('students').get());});
 await step('approved staff Excel imports preserve records and retry safely',async()=>{
  const rows=[{name:' Example Student ',school:'Example School'},{name:'New Workbook Student',school:'Example School'},{name:'New Workbook Student',school:'Example School'}];
@@ -45,19 +45,39 @@ await step('edited open month keeps totals when staff adds another payment',asyn
  await staff.store.call('addPayment',payment('open-edit-02',4,'2026-12-03','S2'));const after=(await staff.db.ref('ledger/2026-12/S2').get()).val();assert.equal(after.totalCents,700);assert.ok(after.editHead);
  const r=await staff.store.call('issueReceipt',{studentId:'S2',month:'2026-12'});assert.equal(r.totalCents,700);assert.equal(r.items.reduce((n,p)=>n+p.amountCents,0),700);
 });
-await step('insurance stays separate from training, with separate receipt and shared numbering',async()=>{
+await step('insurance is recorded without receipt and cannot reserve new insurance numbers',async()=>{
  const training=(await staff.db.ref('ledger/2026-10/S1').get()).val();
  const pay={...payment('insurance-01',20),category:'insurance'};await staff.store.call('addPayment',pay);await staff.store.call('addPayment',pay);
- assert.equal((await staff.db.ref('insuranceLedger/2026-10/S1/totalCents').get()).val(),2000);assert.equal((await staff.db.ref('ledger/2026-10/S1/totalCents').get()).val(),training.totalCents);
- const r=await staff.store.call('issueReceipt',{studentId:'S1',month:'2026-10',category:'insurance'});assert.equal(r.category,'insurance');assert.equal(r.totalCents,2000);assert.equal(r.items.length,1);assert.notEqual(r.number,training.receipt.number);assert.ok(r.id.endsWith('_insurance'));
- const repeat=await staff.store.call('issueReceipt',{studentId:'S1',month:'2026-10',category:'insurance'});assert.equal(repeat.number,r.number);
- await assert.rejects(staff.store.call('addPayment',{...payment('insurance-02',10),category:'insurance'}),/already saved/);
- await assertFails(staff.db.ref('insuranceLedger/2026-10/S1/receipt/totalCents').set(100));
- const l=(await staff.db.ref('insuranceLedger/2026-10/S1').get()).val();await admin.store.call('editPayment',{studentId:'S1',month:'2026-10',category:'insurance',paymentId:l.head,date:'2026-10-02',amount:25,method:'QR',reference:'',reason:'Correct insurance'});
- assert.equal((await staff.db.ref('insuranceLedger/2026-10/S1/receipt/totalCents').get()).val(),2500);assert.equal((await staff.db.ref('ledger/2026-10/S1/receipt/totalCents').get()).val(),training.receipt.totalCents);
- await admin.store.call('correctReceipt',{id:r.id,category:'insurance',amount:26,reason:'Insurance correction'});assert.equal((await staff.db.ref('insuranceLedger/2026-10/S1/receipt/totalCents').get()).val(),2600);
- await staff.store.call('addPayment',{...payment('insurance-open',3,'2027-02-01','S2'),category:'insurance'});await staff.store.call('addPayment',payment('training-open',4,'2027-02-01','S2'));
- const ir=await staff.store.call('issueReceipt',{studentId:'S2',month:'2027-02',category:'insurance'});const tr=await staff.store.call('issueReceipt',{studentId:'S2',month:'2027-02'});assert.equal(ir.totalCents,300);assert.equal(tr.totalCents,400);assert.notEqual(ir.number,tr.number);
+ const l=(await staff.db.ref('insuranceLedger/2026-10/S1').get()).val();assert.equal(l.totalCents,2000);assert.equal(l.receipt,undefined);
+ await assert.rejects(staff.store.call('issueReceipt',{studentId:'S1',month:'2026-10',category:'insurance'}),/do not have receipts/);
+ await staff.store.call('addPayment',{...payment('insurance-02',10),category:'insurance'});
+ await admin.store.call('editPayment',{studentId:'S1',month:'2026-10',category:'insurance',paymentId:l.head,date:'2026-10-02',amount:25,method:'QR',account:'bank',reference:'',reason:'Correct insurance'});
+ assert.equal((await staff.db.ref('insuranceLedger/2026-10/S1/totalCents').get()).val(),3500);assert.equal((await staff.db.ref('ledger/2026-10/S1/totalCents').get()).val(),training.totalCents);
+ await assertFails(admin.db.ref('insuranceLedger/2026-10/S1/receipt').set({...training.receipt,number:'FAKE'}));
+});
+await step('legacy saved insurance receipts are retained without blocking further payments',async()=>{
+ await staff.store.call('addPayment',{...payment('legacy-insurance-1',2,'2027-04-01','S2'),category:'insurance'});
+ const legacy=(await staff.db.ref('ledger/2026-10/S2/receipt').get()).val();await env.withSecurityRulesDisabled(async context=>{await context.database().ref('insuranceLedger/2027-04/S2/receipt').set({...legacy,totalCents:200,originalTotalCents:200});});
+ await staff.store.call('addPayment',{...payment('legacy-insurance-2',3,'2027-04-02','S2'),category:'insurance'});
+ const l=(await staff.db.ref('insuranceLedger/2027-04/S2').get()).val();assert.equal(l.totalCents,500);assert.equal(l.receipt.totalCents,200);
+});
+await step('staff full name is captured immutably on student payments',async()=>{
+ await staff.store.call('saveProfileName',{name:'Named Receiver'});await staff.store.call('addPayment',payment('name-test',2,'2027-03-01','S1'));
+ const l=(await staff.db.ref('ledger/2027-03/S1').get()).val(),p=(await staff.db.ref('events/2027-03/S1/'+l.head).get()).val();assert.equal(p.receivedByName,'Named Receiver');assert.equal(p.createdBy,'staff');assert.equal(p.account,'cash');
+ await assertFails(staff.db.ref('events/2027-03/S1/'+l.head+'/receivedByName').set('Other'));
+ await staff.store.call('saveProfileName',{name:'Renamed Receiver'});assert.equal((await staff.db.ref('events/2027-03/S1/'+l.head+'/receivedByName').get()).val(),'Named Receiver');
+});
+await step('treasury is admin-only, entries retry safely and voids retain originals',async()=>{
+ await admin.store.call('saveOpening',{date:'2026-10-01',bank:100,cash:50});await assert.rejects(admin.store.call('saveOpening',{date:'2026-11-01',bank:1,cash:1}));
+ const entry={requestId:'treasury-001',date:'2026-10-02',type:'expense',account:'bank',amount:20,transactionCategory:'Equipment',description:'Example purchase',reference:'REF'};
+ await admin.store.call('addTransaction',entry);await admin.store.call('addTransaction',entry);
+ await assert.rejects(admin.store.call('addTransaction',{...entry,amount:21}),/different details/);
+ await assert.rejects(staff.store.call('addTransaction',{...entry,requestId:'unauthorized'}),/Administrator/);await assertFails(staff.db.ref('treasuryTransactions').get());await assertFails(pending.db.ref('treasuryOpening').get());
+ await assertFails(staff.db.ref('treasuryTransactions/direct').set({}));await assertFails(admin.db.ref('treasuryTransactions/treasury-001/amountCents').set(2));await assertFails(admin.db.ref('treasuryTransactions/treasury-001').remove());
+ await admin.store.call('voidTransaction',{id:'treasury-001',reason:'Example correction'});assert.equal((await admin.db.ref('treasuryTransactions/treasury-001/amountCents').get()).val(),2000);await assertFails(admin.db.ref('treasuryVoids/treasury-001').remove());
+ await admin.store.call('addTransaction',{...entry,requestId:'transfer-001',type:'transfer',account:'cash',toAccount:'bank'});await assert.rejects(admin.store.call('addTransaction',{...entry,requestId:'transfer-bad',type:'transfer',toAccount:'bank'}),/valid transaction/);
+ await admin.store.call('saveReconciliation',{month:'2026-10',bank:100,cash:20,note:'Example counted balances'});await assertFails(staff.db.ref('treasuryChecks').get());
+ await admin.store.call('addAsset',{name:'Example Equipment',quantity:1,value:20,location:'Club',transactionId:'treasury-001'});await assertFails(staff.db.ref('treasuryAssets').get());
 });
 await step('only admin deletes and restores students, preserving historical records',async()=>{
  await assert.rejects(staff.store.call('deleteStudent',{studentId:'S2'}),/Administrator/);await assertFails(staff.db.ref('students/S2').remove());await assertFails(staff.db.ref('students/S2/deleted').set(true));

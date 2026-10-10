@@ -14,3 +14,14 @@ export function monthlyReport(month,rows,opening,voids={}){
  const income=selected.filter(r=>r.type==='income').reduce((n,r)=>n+r.amountCents,0),expense=selected.filter(r=>r.type==='expense').reduce((n,r)=>n+r.amountCents,0);
  return {month,rows:selected.sort((a,b)=>a.date.localeCompare(b.date)||a.id.localeCompare(b.id)),income,expense,net:income-expense,opening:begin,closing:close,transfers:selected.filter(r=>r.type==='transfer').reduce((n,r)=>n+r.amountCents,0)};
 }
+export function monthlyTrends(month,rows,opening,voids={}){
+ const [year,number]=month.split('-').map(Number);
+ return Array.from({length:6},(_,i)=>{
+  const date=new Date(Date.UTC(year,number-6+i,1)),key=date.toISOString().slice(0,7),r=monthlyReport(key,rows,opening,voids);
+  return {...r,training:r.rows.filter(x=>x.source==='Student payment'&&x.category==='Student training fees').reduce((n,x)=>n+x.amountCents,0),insurance:r.rows.filter(x=>x.source==='Student payment'&&x.category==='Student insurance').reduce((n,x)=>n+x.amountCents,0),balance:r.closing?r.closing.bank+r.closing.cash:null};
+ });
+}
+export function monthChange(current,previous){
+ const difference=current-previous;
+ return {difference,percent:previous>0?difference/previous*100:null};
+}

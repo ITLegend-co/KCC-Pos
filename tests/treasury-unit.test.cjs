@@ -17,3 +17,17 @@ test('voids remove collections and refunds create one expense in the return mont
  const opening={date:'2026-10-01',bankCents:2000,cashCents:0},oct=context.monthlyReport('2026-10',rows,opening),nov=context.monthlyReport('2026-11',rows,opening);
  assert.equal(oct.income,1000);assert.equal(oct.expense,0);assert.equal(nov.income,0);assert.equal(nov.expense,1000);assert.equal(nov.closing.bank,1000);assert.equal(nov.closing.cash,1000);
 });
+test('six-month comparisons cross years, separate collections, refunds and unavailable balances',()=>{
+ const rows=[
+  {id:'t',date:'2026-12-01',type:'income',account:'cash',amountCents:1000,source:'Student payment',category:'Student training fees'},
+  {id:'i',date:'2027-01-02',type:'income',account:'bank',amountCents:2000,source:'Student payment',category:'Student insurance'},
+  {id:'r',date:'2027-01-03',type:'expense',account:'cash',amountCents:500,source:'Student refund',category:'Student refund'},
+  {id:'x',date:'2027-01-04',type:'transfer',account:'bank',toAccount:'cash',amountCents:100},
+  {id:'void',date:'2027-01-05',type:'income',account:'cash',amountCents:9999}
+ ];
+ const series=context.monthlyTrends('2027-01',rows,{date:'2026-12-01',bankCents:10000,cashCents:0},{void:{}});
+ assert.equal(series.length,6);assert.equal(series[0].month,'2026-08');assert.equal(series[0].balance,null);assert.equal(series[4].training,1000);assert.equal(series[4].balance,11000);
+ assert.equal(series[5].insurance,2000);assert.equal(series[5].training,0);assert.equal(series[5].income,2000);assert.equal(series[5].expense,500);assert.equal(series[5].balance,12500);
+ assert.equal(context.monthChange(2000,1000).percent,100);assert.equal(context.monthChange(500,1000).percent,-50);
+ assert.equal(context.monthChange(1000,0).percent,null);assert.equal(context.monthChange(1000,-1000).percent,null);assert.equal(context.monthChange(1000,-1000).difference,2000);
+});

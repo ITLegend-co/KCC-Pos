@@ -89,3 +89,13 @@ Open **Treasury** and select the reporting month at the top. Student training an
 New student payments explicitly select the receiving account. Cash defaults to the cash box; QR/bank transfer/cheque default to CIMB. For older records without an account, the same mapping is used. Check legacy entries and cheques against actual settlement, and use admin payment edits to correct the receiving account.
 
 Only the pinned admin can read/write `treasuryOpening`, `treasuryTransactions`, `treasuryVoids`, `treasuryChecks` and `treasuryAssets`. Approved staff continue to manage students and student payments only. New student payment events store `receivedByName` validated against the receiver’s profile and `account` validated as `bank` or `cash`. Renaming a profile does not change names on existing new payment events; older events fall back to UID/profile information.
+
+## Admin student-payment voids and refunds
+
+In **Daily payments**, only admin sees **Void** and **Refund** next to an active payment. A reason is required. These are full-payment actions; partial refunds are not supported. Original events remain immutable, and only the committed audit chain affects reports.
+
+- **Void** cancels an incorrect entry: its effective collection amount becomes zero and it is excluded from treasury income. Any saved training receipt is revised by the cancelled amount. A fully cancelled receipt shows VOID RECEIPT and retains its original number and audit history. If a separate receipt adjustment prevents a full cancellation, correct that adjustment first.
+- **Refund** records money already returned to the student: select the actual return date and cash/CIMB account. The original collection and receipt amount remain; the PDF payment breakdown marks it refunded. Treasury records the refund as an expense on its return date, including across reporting months. This does not initiate a bank transfer.
+- A voided/refunded payment cannot be edited, voided again or refunded again through the application. Competing actions commit only one ledger amendment. Daily collection totals show historical money received, excluding voids; refund expenses appear in Treasury. The payment CSV includes status, reason, refund date, amount and account.
+
+Publish the updated Realtime Database rules before using these actions. Security rules permit action records only for the pinned admin and validate void amounts, refund metadata, and linked ledger/receipt revisions.

@@ -85,6 +85,25 @@ await step('only admin deletes and restores students, preserving historical reco
  await assert.rejects(staff.store.call('addPayment',payment('deleted-add',1,'2027-01-01','S2')),/deleted/);await assertFails(admin.db.ref('students/S2').remove());
  await admin.store.call('deleteStudent',{studentId:'S2',restore:true});await staff.store.call('addPayment',payment('restored-add',1,'2027-01-01','S2'));
 });
+await step('only admin voids payments, including fully cancelling a saved receipt',async()=>{
+ await staff.store.call('addPayment',payment('void-1',10,'2027-05-01'));await staff.store.call('addPayment',payment('void-2',5,'2027-05-02'));
+ const receipt=await staff.store.call('issueReceipt',{studentId:'S1',month:'2027-05'}),events=(await staff.db.ref('events/2027-05/S1').get()).val(),ids=Object.keys(events),first=ids.find(id=>events[id].amountCents===1000),second=ids.find(id=>events[id].amountCents===500),action={studentId:'S1',month:'2027-05',paymentId:first,action:'void',reason:'Wrong entry'};
+ await assert.rejects(staff.store.call('paymentAction',action),/Administrator/);await admin.store.call('paymentAction',action);
+ let l=(await staff.db.ref('ledger/2027-05/S1').get()).val();assert.equal(l.totalCents,500);assert.equal(l.receipt.totalCents,500);assert.equal(l.receipt.number,receipt.number);assert.equal((await staff.db.ref('events/2027-05/S1/'+first+'/amountCents').get()).val(),1000);
+ await assert.rejects(admin.store.call('paymentAction',action),/already been/);await assert.rejects(admin.store.call('editPayment',{...action,action:'edit',date:'2027-05-01',amount:2,method:'Cash',reason:'Retry'}),/already been/);
+ await admin.store.call('paymentAction',{...action,paymentId:second});l=(await staff.db.ref('ledger/2027-05/S1').get()).val();assert.equal(l.totalCents,0);assert.equal(l.receipt.totalCents,0);assert.equal(l.receipt.originalTotalCents,1500);assert.equal(l.receipt.revision,3);
+ await assertFails(staff.db.ref('paymentChanges/2027-05/S1/'+l.editHead+'/action').set('refund'));
+ await staff.store.call('addPayment',{...payment('insurance-void',3,'2027-05-01'),category:'insurance'});const il=(await staff.db.ref('insuranceLedger/2027-05/S1').get()).val();await admin.store.call('paymentAction',{...action,paymentId:il.head,category:'insurance'});assert.equal((await staff.db.ref('insuranceLedger/2027-05/S1/totalCents').get()).val(),0);
+});
+await step('full refunds retain collections and receipt, record account/date, prevent double refunds',async()=>{
+ await staff.store.call('addPayment',payment('refund-1',9,'2027-06-01'));const r=await staff.store.call('issueReceipt',{studentId:'S1',month:'2027-06'}),l=(await staff.db.ref('ledger/2027-06/S1').get()).val();
+ const action={studentId:'S1',month:'2027-06',paymentId:l.head,action:'refund',refundDate:'2027-07-02',refundAccount:'bank',reason:'Returned to student'};
+ await assert.rejects(staff.store.call('paymentAction',action),/Administrator/);await assert.rejects(admin.store.call('paymentAction',{...action,refundDate:'2027-05-31'}),/before the payment/);
+ const attempts=await Promise.allSettled([admin.store.call('paymentAction',action),admin.store.call('paymentAction',action)]);assert.equal(attempts.filter(r=>r.status==='fulfilled').length,1);
+ const after=(await staff.db.ref('ledger/2027-06/S1').get()).val(),change=(await staff.db.ref('paymentChanges/2027-06/S1/'+after.editHead).get()).val();assert.equal(after.totalCents,900);assert.equal(after.receipt.totalCents,900);assert.equal(after.receipt.number,r.number);assert.equal(change.action,'refund');assert.equal(change.refundDate,'2027-07-02');assert.equal(change.refundAccount,'bank');assert.equal(change.beforeCents,900);assert.equal(change.afterCents,900);
+ await assert.rejects(admin.store.call('paymentAction',action),/already been/);await assert.rejects(admin.store.call('paymentAction',{...action,action:'void'}),/already been/);await assertFails(admin.db.ref('paymentChanges/2027-06/S1/'+after.editHead).remove());
+ await staff.store.call('addPayment',{...payment('insurance-refund',4,'2027-06-01','S2'),category:'insurance'});const il=(await staff.db.ref('insuranceLedger/2027-06/S2').get()).val();await admin.store.call('paymentAction',{...action,studentId:'S2',paymentId:il.head,category:'insurance'});assert.equal((await staff.db.ref('insuranceLedger/2027-06/S2/totalCents').get()).val(),400);
+});
 await step('revoked staff lose reads and writes',async()=>{await admin.store.call('reviewUser',{uid:'staff',status:'rejected'});await assertFails(staff.db.ref('students').get());await assert.rejects(staff.store.call('addStudent',{name:'Example',school:'School'}));});
 await env.cleanup();console.log('ALL REALTIME RULES CHECKS PASSED');process.exit(0);
 })().catch(e=>{console.error(e);process.exit(1)});

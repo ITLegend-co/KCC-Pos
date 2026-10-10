@@ -10,3 +10,10 @@ test('student collections keep actor name, source category and account without r
  const rows=context.studentTransactions({'2026-10':{s1:{receipt:{totalCents:999}}}},{},{},()=>[row],'insurance',{s1:{name:'Student'}});
  assert.equal(rows[0].amountCents,300);assert.equal(rows[0].recordedBy,'Example Clerk');assert.equal(rows[0].account,'bank');assert.equal(rows[0].category,'Student insurance');
 });
+
+test('voids remove collections and refunds create one expense in the return month',()=>{
+ const records=[{id:'void',studentId:'s1',date:'2026-10-01',amountCents:0,status:'void',createdBy:'staff'},{id:'refund',studentId:'s1',date:'2026-10-02',amountCents:1000,method:'Cash',status:'refunded',refundId:'r1',refundDate:'2026-11-02',refundAccount:'bank',refundAmountCents:1000,refundBy:'admin',actionReason:'Returned'}];
+ const rows=context.studentTransactions({'2026-10':{s1:{}}},{},{},()=>records,'training');assert.equal(rows.length,2);
+ const opening={date:'2026-10-01',bankCents:2000,cashCents:0},oct=context.monthlyReport('2026-10',rows,opening),nov=context.monthlyReport('2026-11',rows,opening);
+ assert.equal(oct.income,1000);assert.equal(oct.expense,0);assert.equal(nov.income,0);assert.equal(nov.expense,1000);assert.equal(nov.closing.bank,1000);assert.equal(nov.closing.cash,1000);
+});

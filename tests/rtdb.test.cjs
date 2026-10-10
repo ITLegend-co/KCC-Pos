@@ -120,6 +120,23 @@ await step('request rejection preserves payment; approved insurance void process
  const next={...request,requestId:'staff-void-approved'};await staff.store.call('requestPaymentAction',next);await admin.store.call('reviewPaymentRequest',{id:next.requestId,decision:'approved',reason:'Confirmed duplicate'});await admin.store.call('processPaymentRequest',{id:next.requestId});const after=(await staff.db.ref('insuranceLedger/2027-08/S2').get()).val();assert.equal(after.totalCents,0);assert.equal((await staff.db.ref('insurancePaymentChanges/2027-08/S2/'+after.editHead+'/requestId').get()).val(),next.requestId);
  await assert.rejects(pending.store.call('requestPaymentAction',next));
 });
+await step('cheque is blocked for new entries and edits while historical actions remain available',async()=>{
+ for(const category of ['training','insurance']){
+  const root=category==='insurance'?'insuranceEvents':'events',ledgerRoot=category==='insurance'?'insuranceLedger':'ledger',changesRoot=category==='insurance'?'insurancePaymentChanges':'paymentChanges',m=category==='insurance'?'2027-11':'2027-10';
+  const d={...payment('cheque-check-'+category,8,m+'-01'),category};
+  await assert.rejects(staff.store.call('addPayment',{...d,method:'Cheque'}),/payment method/);
+  await staff.store.call('addPayment',d);
+  const l=(await staff.db.ref(ledgerRoot+'/'+m+'/S1').get()).val(),eventPath=root+'/'+m+'/S1/'+l.head,event=(await staff.db.ref(eventPath).get()).val();
+  await assertFails(staff.db.ref(root+'/'+m+'/S1/forged-cheque').set({...event,method:'Cheque',previous:l.head,totalCents:1600,requestId:'forged-'+category}));
+  await env.withSecurityRulesDisabled(async context=>{await context.database().ref(eventPath+'/method').set('Cheque');});
+  assert.equal((await staff.db.ref(eventPath+'/method').get()).val(),'Cheque');
+  await assert.rejects(admin.store.call('editPayment',{studentId:'S1',month:m,paymentId:l.head,category,date:m+'-01',amount:8,method:'Cheque',account:'bank',reason:'Correction'}),/valid method/);
+  const action=category==='insurance'?'void':'refund';
+  await admin.store.call('paymentAction',{studentId:'S1',month:m,paymentId:l.head,category,action,reason:'Historical payment action',refundDate:m+'-02',refundAccount:'bank'});
+  const after=(await staff.db.ref(ledgerRoot+'/'+m+'/S1').get()).val(),change=(await staff.db.ref(changesRoot+'/'+m+'/S1/'+after.editHead).get()).val();
+  assert.equal(change.method,'Cheque');assert.equal(change.action,action);
+ }
+});
 await step('revoked staff lose reads and writes',async()=>{await admin.store.call('reviewUser',{uid:'staff',status:'rejected'});await assertFails(staff.db.ref('students').get());await assert.rejects(staff.store.call('addStudent',{name:'Example',school:'School'}));});
 await env.cleanup();console.log('ALL REALTIME RULES CHECKS PASSED');process.exit(0);
 })().catch(e=>{console.error(e);process.exit(1)});

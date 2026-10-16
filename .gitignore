@@ -3,3 +3,8 @@ node_modules/
 *-debug.log
 service-account*.json
 .env*
+
+android/build/
+*.jks
+*.keystore
+*.idsig

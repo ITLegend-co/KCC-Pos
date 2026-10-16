@@ -111,3 +111,7 @@ Processing still uses the existing admin-only audited payment actions. It checks
 Publish the updated Realtime Database rules before use. Approved staff can create requests, but only the pinned administrator can review them or process financial actions.
 
 Treasury reports include six months of income/expenses, training and insurance collections, and combined closing balance trends ending in the selected reporting month. Comparison cards show the difference from the previous month and percentages when that month has a positive baseline. Zero baselines and previous deficits show an explanation instead. Voids are excluded, refunds count as expenses on their return date, and transfers do not create income or expenses. Balance points before the starting balances are unavailable. Charts and comparisons are included in Print / Save PDF; CSV includes the monthly figures. The combined balance row is labelled Total.
+
+## Installation
+
+The sign-in screen and account sidebar link directly to the signed Android download at `downloads/KCC-POS.apk`. The small Android launcher opens the live site using the installed browser; Android 6+, a browser and internet are required. See `android/README.md` for rebuilding and signing updates. Browser installation is supported with a project-scoped manifest and service worker, without custom prompts or installation notices. The worker does not cache payment records, Firebase traffic, PDFs or authentication data.

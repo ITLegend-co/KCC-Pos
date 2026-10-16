@@ -28,6 +28,14 @@ jobs:
       - run: npm ci
       - run: npm test && npm run check
       - run: npx firebase-tools@14.22.0 emulators:exec --only database --project demo-kcc-pos "npm run test:rules"
+      - name: Verify Android download
+        run: |
+          cd public/downloads
+          sha256sum -c KCC-POS.apk.sha256
+          signer=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)
+          test -n "$signer"
+          "$signer" verify --verbose KCC-POS.apk
+          "$(dirname "$signer")/aapt" dump badging KCC-POS.apk | grep -F "package: name='co.itlegend.kccpos'"
       - uses: actions/configure-pages@v5
         with:
           enablement: true

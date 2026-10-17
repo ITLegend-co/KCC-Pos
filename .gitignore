@@ -8,3 +8,5 @@ android/build/
 *.jks
 *.keystore
 *.idsig
+
+artifacts/

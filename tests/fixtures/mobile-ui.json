@@ -1,0 +1,140 @@
+{
+  "summaryRows": {
+    "value": "",
+    "textContent": "",
+    "innerHTML": "<tr><td><b>Example Student</b><small>Example School</small><small>INSURANCE FEE - ALLIANZ STUDENT PERSONAL ACCIDENT</small></td><td>1</td><td>RM20.00</td><td><span class=\"badge\">No receipt</span></td></tr><tr><td><b>Example Student</b><small>Example School</small><small>SPORT CLIMBING TRAINING FEES</small></td><td>1</td><td>RM10.00</td><td><span class=\"badge\">Ready</span></td></tr>",
+    "hidden": false
+  },
+  "paymentRows": {
+    "value": "",
+    "textContent": "",
+    "innerHTML": "<tr><td>2026-10-03<small>Example Student</small></td><td>Cash<small></small><small>SPORT CLIMBING TRAINING FEES</small><small>Received by: Example Clerk</small></td><td>RM10.00</td><td><div class=\"actions\"><button class=\"secondary\" data-edit-payment=\"p1\">Edit</button><button class=\"secondary\" data-payment-action=\"void\" data-payment-id=\"p1\">Void</button><button class=\"secondary\" data-payment-action=\"refund\" data-payment-id=\"p1\">Refund</button></div></td></tr><tr><td>2026-10-03<small>Example Student</small></td><td>Cash<small></small><small>INSURANCE FEE - ALLIANZ STUDENT PERSONAL ACCIDENT</small><small>Received by: Example Clerk</small></td><td>RM20.00</td><td><div class=\"actions\"><button class=\"secondary\" data-edit-payment=\"p2\">Edit</button><button class=\"secondary\" data-payment-action=\"void\" data-payment-id=\"p2\">Void</button><button class=\"secondary\" data-payment-action=\"refund\" data-payment-id=\"p2\">Refund</button></div></td></tr>",
+    "hidden": false
+  },
+  "receiptRows": {
+    "value": "",
+    "textContent": "",
+    "innerHTML": "<tr><td><b>Example Student</b><small>SPORT CLIMBING TRAINING FEES</small><small>Not yet saved</small></td><td>RM10.00</td><td><div class=\"actions\"><button data-issue=\"s1\" data-category=\"training\">Save receipt</button></div></td></tr>",
+    "hidden": false
+  },
+  "studentRows": {
+    "value": "",
+    "textContent": "",
+    "innerHTML": "<tr><td>Example Student</td><td>Example School</td><td><button class=\"secondary\" data-delete-student=\"s1\" data-restore=\"false\">Delete</button></td></tr>",
+    "hidden": false
+  },
+  "balanceRows": {
+    "value": "",
+    "textContent": "",
+    "innerHTML": "<tr><td>CIMB current account</td><td>RM50.00</td><td>RM45.00</td></tr><tr><td>Cash box</td><td>RM10.00</td><td>RM40.00</td></tr><tr><td><b>Total</b></td><td><b>RM60.00</b></td><td><b>RM85.00</b></td></tr>",
+    "hidden": false
+  },
+  "treasuryRows": {
+    "value": "",
+    "textContent": "",
+    "innerHTML": "<tr><td>2026-10-03<small>Student payment</small></td><td>income \u00b7 Student insurance<small>Example Student</small><small></small><small>Recorded by: Example Clerk</small></td><td>Cash box</td><td>RM20.00</td><td>Edit in Daily payments</td></tr><tr><td>2026-10-03<small>Student payment</small></td><td>income \u00b7 Student training fees<small>Example Student</small><small></small><small>Recorded by: Example Clerk</small></td><td>Cash box</td><td>RM10.00</td><td>Edit in Daily payments</td></tr><tr><td>2026-10-04<small>Treasury entry</small></td><td>expense \u00b7 Equipment<small>Purchase</small><small></small><small>Recorded by: Example Treasurer</small></td><td>CIMB current account</td><td>RM5.00</td><td><button class=\"secondary\" data-void=\"expense1\">Void</button><small>ID: expense1</small></td></tr>",
+    "hidden": false
+  },
+  "treasuryComparison": {
+    "value": "",
+    "textContent": "",
+    "innerHTML": "<p class=\"comparison-note\">Compared with Sept 26. Figures use saved records; the selected month may still be in progress. Student collections show amounts received; refunds appear in expenses.</p><article><p>Income</p><strong>RM30.00</strong><p class=\"change-good\">Up RM30.00 \u00b7 No previous income to compare</p><small>Last month: RM0.00</small></article><article><p>Expenses</p><strong>RM5.00</strong><p class=\"change-bad\">Up RM5.00 \u00b7 No previous expenses to compare</p><small>Last month: RM0.00</small></article><article><p>Net surplus / deficit</p><strong>RM25.00</strong><p class=\"change-good\">Up RM25.00 \u00b7 No previous net surplus / deficit to compare</p><small>Last month: RM0.00</small></article>",
+    "hidden": false
+  },
+  "treasuryCharts": {
+    "value": "",
+    "textContent": "",
+    "innerHTML": "<section class=\"report-chart\"><h3>Monthly income and expenses</h3><div class=\"chart-legend\"><span><i style=\"background:#247565\"></i>Income</span><span><i style=\"background:#d68b30\"></i>Expenses</span></div><svg viewBox=\"0 0 640 240\" role=\"img\" aria-label=\"Monthly income and expenses\"><title>Monthly income and expenses \u2014 six months ending 2026-10</title><line x1=\"90\" x2=\"625\" y1=\"195\" y2=\"195\" stroke=\"#dde4de\"/><text x=\"82\" y=\"199\" text-anchor=\"end\" fill=\"#52645b\" font-size=\"11\">RM0.00</text><line x1=\"90\" x2=\"625\" y1=\"150.75\" y2=\"150.75\" stroke=\"#dde4de\"/><text x=\"82\" y=\"154.75\" text-anchor=\"end\" fill=\"#52645b\" font-size=\"11\">RM7.50</text><line x1=\"90\" x2=\"625\" y1=\"106.5\" y2=\"106.5\" stroke=\"#dde4de\"/><text x=\"82\" y=\"110.5\" text-anchor=\"end\" fill=\"#52645b\" font-size=\"11\">RM15.00</text><line x1=\"90\" x2=\"625\" y1=\"62.25\" y2=\"62.25\" stroke=\"#dde4de\"/><text x=\"82\" y=\"66.25\" text-anchor=\"end\" fill=\"#52645b\" font-size=\"11\">RM22.50</text><line x1=\"90\" x2=\"625\" y1=\"18\" y2=\"18\" stroke=\"#dde4de\"/><text x=\"82\" y=\"22\" text-anchor=\"end\" fill=\"#52645b\" font-size=\"11\">RM30.00</text><text x=\"134.58333333333334\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">May 26</text><text x=\"223.75\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">Jun 26</text><text x=\"312.9166666666667\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">Jul 26</text><text x=\"402.08333333333337\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">Aug 26</text><text x=\"491.25\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">Sept 26</text><text x=\"580.4166666666667\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">Oct 26</text><rect x=\"107.83333333333334\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#247565\"><title>May 26 \u00b7 Income RM0.00</title></rect><rect x=\"197\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#247565\"><title>Jun 26 \u00b7 Income RM0.00</title></rect><rect x=\"286.1666666666667\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#247565\"><title>Jul 26 \u00b7 Income RM0.00</title></rect><rect x=\"375.33333333333337\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#247565\"><title>Aug 26 \u00b7 Income RM0.00</title></rect><rect x=\"464.5\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#247565\"><title>Sept 26 \u00b7 Income RM0.00</title></rect><rect x=\"553.6666666666667\" y=\"18\" width=\"23.75\" height=\"177\" rx=\"2\" fill=\"#247565\"><title>Oct 26 \u00b7 Income RM30.00</title></rect><rect x=\"134.58333333333334\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#d68b30\"><title>May 26 \u00b7 Expenses RM0.00</title></rect><rect x=\"223.75\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#d68b30\"><title>Jun 26 \u00b7 Expenses RM0.00</title></rect><rect x=\"312.9166666666667\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#d68b30\"><title>Jul 26 \u00b7 Expenses RM0.00</title></rect><rect x=\"402.08333333333337\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#d68b30\"><title>Aug 26 \u00b7 Expenses RM0.00</title></rect><rect x=\"491.25\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#d68b30\"><title>Sept 26 \u00b7 Expenses RM0.00</title></rect><rect x=\"580.4166666666667\" y=\"165.5\" width=\"23.75\" height=\"29.5\" rx=\"2\" fill=\"#d68b30\"><title>Oct 26 \u00b7 Expenses RM5.00</title></rect></svg><details><summary>View monthly figures</summary><table><thead><tr><th>Month</th><th>Income</th><th>Expenses</th></tr></thead><tbody><tr><td>May 26</td><td>RM0.00</td><td>RM0.00</td></tr><tr><td>Jun 26</td><td>RM0.00</td><td>RM0.00</td></tr><tr><td>Jul 26</td><td>RM0.00</td><td>RM0.00</td></tr><tr><td>Aug 26</td><td>RM0.00</td><td>RM0.00</td></tr><tr><td>Sept 26</td><td>RM0.00</td><td>RM0.00</td></tr><tr><td>Oct 26</td><td>RM30.00</td><td>RM5.00</td></tr></tbody></table></details></section><section class=\"report-chart\"><h3>Student collections</h3><div class=\"chart-legend\"><span><i style=\"background:#247565\"></i>Training fees</span><span><i style=\"background:#d68b30\"></i>Insurance</span></div><svg viewBox=\"0 0 640 240\" role=\"img\" aria-label=\"Student collections\"><title>Student collections \u2014 six months ending 2026-10</title><line x1=\"90\" x2=\"625\" y1=\"195\" y2=\"195\" stroke=\"#dde4de\"/><text x=\"82\" y=\"199\" text-anchor=\"end\" fill=\"#52645b\" font-size=\"11\">RM0.00</text><line x1=\"90\" x2=\"625\" y1=\"150.75\" y2=\"150.75\" stroke=\"#dde4de\"/><text x=\"82\" y=\"154.75\" text-anchor=\"end\" fill=\"#52645b\" font-size=\"11\">RM5.00</text><line x1=\"90\" x2=\"625\" y1=\"106.5\" y2=\"106.5\" stroke=\"#dde4de\"/><text x=\"82\" y=\"110.5\" text-anchor=\"end\" fill=\"#52645b\" font-size=\"11\">RM10.00</text><line x1=\"90\" x2=\"625\" y1=\"62.25\" y2=\"62.25\" stroke=\"#dde4de\"/><text x=\"82\" y=\"66.25\" text-anchor=\"end\" fill=\"#52645b\" font-size=\"11\">RM15.00</text><line x1=\"90\" x2=\"625\" y1=\"18\" y2=\"18\" stroke=\"#dde4de\"/><text x=\"82\" y=\"22\" text-anchor=\"end\" fill=\"#52645b\" font-size=\"11\">RM20.00</text><text x=\"134.58333333333334\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">May 26</text><text x=\"223.75\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">Jun 26</text><text x=\"312.9166666666667\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">Jul 26</text><text x=\"402.08333333333337\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">Aug 26</text><text x=\"491.25\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">Sept 26</text><text x=\"580.4166666666667\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">Oct 26</text><rect x=\"107.83333333333334\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#247565\"><title>May 26 \u00b7 Training fees RM0.00</title></rect><rect x=\"197\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#247565\"><title>Jun 26 \u00b7 Training fees RM0.00</title></rect><rect x=\"286.1666666666667\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#247565\"><title>Jul 26 \u00b7 Training fees RM0.00</title></rect><rect x=\"375.33333333333337\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#247565\"><title>Aug 26 \u00b7 Training fees RM0.00</title></rect><rect x=\"464.5\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#247565\"><title>Sept 26 \u00b7 Training fees RM0.00</title></rect><rect x=\"553.6666666666667\" y=\"106.5\" width=\"23.75\" height=\"88.5\" rx=\"2\" fill=\"#247565\"><title>Oct 26 \u00b7 Training fees RM10.00</title></rect><rect x=\"134.58333333333334\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#d68b30\"><title>May 26 \u00b7 Insurance RM0.00</title></rect><rect x=\"223.75\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#d68b30\"><title>Jun 26 \u00b7 Insurance RM0.00</title></rect><rect x=\"312.9166666666667\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#d68b30\"><title>Jul 26 \u00b7 Insurance RM0.00</title></rect><rect x=\"402.08333333333337\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#d68b30\"><title>Aug 26 \u00b7 Insurance RM0.00</title></rect><rect x=\"491.25\" y=\"195\" width=\"23.75\" height=\"0\" rx=\"2\" fill=\"#d68b30\"><title>Sept 26 \u00b7 Insurance RM0.00</title></rect><rect x=\"580.4166666666667\" y=\"18\" width=\"23.75\" height=\"177\" rx=\"2\" fill=\"#d68b30\"><title>Oct 26 \u00b7 Insurance RM20.00</title></rect></svg><details><summary>View monthly figures</summary><table><thead><tr><th>Month</th><th>Training fees</th><th>Insurance</th></tr></thead><tbody><tr><td>May 26</td><td>RM0.00</td><td>RM0.00</td></tr><tr><td>Jun 26</td><td>RM0.00</td><td>RM0.00</td></tr><tr><td>Jul 26</td><td>RM0.00</td><td>RM0.00</td></tr><tr><td>Aug 26</td><td>RM0.00</td><td>RM0.00</td></tr><tr><td>Sept 26</td><td>RM0.00</td><td>RM0.00</td></tr><tr><td>Oct 26</td><td>RM10.00</td><td>RM20.00</td></tr></tbody></table></details></section><section class=\"report-chart\"><h3>Total balance trend</h3><div class=\"chart-legend\"><span><i style=\"background:#247565\"></i>Total</span></div><svg viewBox=\"0 0 640 240\" role=\"img\" aria-label=\"Total balance trend\"><title>Total balance trend \u2014 six months ending 2026-10</title><line x1=\"90\" x2=\"625\" y1=\"195\" y2=\"195\" stroke=\"#dde4de\"/><text x=\"82\" y=\"199\" text-anchor=\"end\" fill=\"#52645b\" font-size=\"11\">RM0.00</text><line x1=\"90\" x2=\"625\" y1=\"150.75\" y2=\"150.75\" stroke=\"#dde4de\"/><text x=\"82\" y=\"154.75\" text-anchor=\"end\" fill=\"#52645b\" font-size=\"11\">RM21.25</text><line x1=\"90\" x2=\"625\" y1=\"106.5\" y2=\"106.5\" stroke=\"#dde4de\"/><text x=\"82\" y=\"110.5\" text-anchor=\"end\" fill=\"#52645b\" font-size=\"11\">RM42.50</text><line x1=\"90\" x2=\"625\" y1=\"62.25\" y2=\"62.25\" stroke=\"#dde4de\"/><text x=\"82\" y=\"66.25\" text-anchor=\"end\" fill=\"#52645b\" font-size=\"11\">RM63.75</text><line x1=\"90\" x2=\"625\" y1=\"18\" y2=\"18\" stroke=\"#dde4de\"/><text x=\"82\" y=\"22\" text-anchor=\"end\" fill=\"#52645b\" font-size=\"11\">RM85.00</text><text x=\"134.58333333333334\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">May 26</text><text x=\"223.75\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">Jun 26</text><text x=\"312.9166666666667\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">Jul 26</text><text x=\"402.08333333333337\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">Aug 26</text><text x=\"491.25\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">Sept 26</text><text x=\"580.4166666666667\" y=\"218\" text-anchor=\"middle\" fill=\"#52645b\" font-size=\"11\">Oct 26</text><circle cx=\"580.4166666666667\" cy=\"18\" r=\"4\" fill=\"#247565\"><title>Oct 26 \u00b7 Total RM85.00</title></circle></svg><p class=\"small\">Combined CIMB and Cash box closing balance. Months before the starting balances are unavailable.</p><details><summary>View monthly figures</summary><table><thead><tr><th>Month</th><th>Total</th></tr></thead><tbody><tr><td>May 26</td><td>Not available</td></tr><tr><td>Jun 26</td><td>Not available</td></tr><tr><td>Jul 26</td><td>Not available</td></tr><tr><td>Aug 26</td><td>Not available</td></tr><tr><td>Sept 26</td><td>Not available</td></tr><tr><td>Oct 26</td><td>RM85.00</td></tr></tbody></table></details></section>",
+    "hidden": false
+  },
+  "month": {
+    "value": "2026-10",
+    "textContent": "",
+    "innerHTML": "",
+    "hidden": false
+  },
+  "monthTotal": {
+    "value": "",
+    "textContent": "RM30.00",
+    "innerHTML": "",
+    "hidden": false
+  },
+  "dailyTotal": {
+    "value": "",
+    "textContent": "RM30.00",
+    "innerHTML": "",
+    "hidden": false
+  },
+  "paymentsMonthTotal": {
+    "value": "",
+    "textContent": "RM30.00",
+    "innerHTML": "",
+    "hidden": false
+  },
+  "overviewTrainingTotal": {
+    "value": "",
+    "textContent": "RM10.00",
+    "innerHTML": "",
+    "hidden": false
+  },
+  "overviewInsuranceTotal": {
+    "value": "",
+    "textContent": "RM20.00",
+    "innerHTML": "",
+    "hidden": false
+  },
+  "paidCount": {
+    "value": "",
+    "textContent": 1,
+    "innerHTML": "",
+    "hidden": false
+  },
+  "receiptCount": {
+    "value": "",
+    "textContent": 0,
+    "innerHTML": "",
+    "hidden": false
+  },
+  "dailyTrainingTotal": {
+    "value": "",
+    "textContent": "RM10.00",
+    "innerHTML": "",
+    "hidden": false
+  },
+  "dailyInsuranceTotal": {
+    "value": "",
+    "textContent": "RM20.00",
+    "innerHTML": "",
+    "hidden": false
+  },
+  "monthlyTrainingTotal": {
+    "value": "",
+    "textContent": "RM10.00",
+    "innerHTML": "",
+    "hidden": false
+  },
+  "monthlyInsuranceTotal": {
+    "value": "",
+    "textContent": "RM20.00",
+    "innerHTML": "",
+    "hidden": false
+  },
+  "treasuryIncome": {
+    "value": "",
+    "textContent": "RM30.00",
+    "innerHTML": "",
+    "hidden": false
+  },
+  "treasuryExpense": {
+    "value": "",
+    "textContent": "RM5.00",
+    "innerHTML": "",
+    "hidden": false
+  },
+  "treasuryNet": {
+    "value": "",
+    "textContent": "RM25.00",
+    "innerHTML": "",
+    "hidden": false
+  }
+}

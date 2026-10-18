@@ -4,13 +4,14 @@ cd "$(dirname "$0")"
 : "${ANDROID_HOME:?Set ANDROID_HOME to an Android SDK with platform 35 and build-tools 35.0.0}"
 build_tools="$ANDROID_HOME/build-tools/35.0.0"
 platform="$ANDROID_HOME/platforms/android-35/android.jar"
+rm -rf build/classes build/dex
 mkdir -p build/classes build/dex
 "$build_tools/aapt2" compile --dir res -o build/resources.zip
 "$build_tools/aapt2" link -o build/resources.apk -I "$platform" --manifest AndroidManifest.xml build/resources.zip
 if [[ -n "${KCC_JAVAC_JAR:-}" ]]; then
-  java -jar "$KCC_JAVAC_JAR" -8 -classpath "$platform" -d build/classes src/co/itlegend/kccpos/MainActivity.java
+  java -jar "$KCC_JAVAC_JAR" -8 -classpath "$platform" -d build/classes src/co/itlegend/kccpos/*.java
 else
-  javac --release 8 -classpath "$platform" -d build/classes src/co/itlegend/kccpos/MainActivity.java
+  javac --release 8 -classpath "$platform" -d build/classes src/co/itlegend/kccpos/*.java
 fi
 python3 - <<'PYTHON'
 from pathlib import Path

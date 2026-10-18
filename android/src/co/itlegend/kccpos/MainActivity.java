@@ -88,6 +88,10 @@ public final class MainActivity extends Activity {
                 try{startActivityForResult(i,PICK);}catch(ActivityNotFoundException e){chooser.onReceiveValue(null);chooser=null;notice("No file picker is available.");}return true;
             }
             @Override public boolean onJsAlert(WebView v,String url,String message,JsResult result){new AlertDialog.Builder(MainActivity.this).setMessage(message).setPositiveButton("OK",(d,w)->result.confirm()).setOnCancelListener(d->result.cancel()).show();return true;}
+            @Override public boolean onJsPrompt(WebView v,String url,String message,String initial,JsPromptResult result){
+                EditText input=new EditText(MainActivity.this);input.setText(initial);input.setSingleLine(false);
+                new AlertDialog.Builder(MainActivity.this).setMessage(message).setView(input).setPositiveButton("Confirm",(d,w)->result.confirm(input.getText().toString())).setNegativeButton("Cancel",(d,w)->result.cancel()).setOnCancelListener(d->result.cancel()).show();return true;
+            }
             @Override public boolean onJsConfirm(WebView v,String url,String message,JsResult result){new AlertDialog.Builder(MainActivity.this).setMessage(message).setPositiveButton("Confirm",(d,w)->result.confirm()).setNegativeButton("Cancel",(d,w)->result.cancel()).setOnCancelListener(d->result.cancel()).show();return true;}
         });
         // Remove expired exports without touching authentication or financial records.

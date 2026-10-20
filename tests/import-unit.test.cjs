@@ -14,3 +14,5 @@ test('malformed student files fail before import',async()=>{
  assert.throws(()=>parseStudentRows([HEADERS,[1,'','']]),/at least one/);
  assert.throws(()=>parseStudentRows([HEADERS,...Array.from({length:401},(_,i)=>[i,'Example '+i,'School'])]),/400/);
 });
+
+test('gender imports validate values and retain compatibility with old templates',async()=>{const {parseStudentRows,HEADERS}=await parser;assert.equal(parseStudentRows([HEADERS,[1,'Test','School','female']]).rows[0].gender,'Female');assert.equal(parseStudentRows([HEADERS.slice(0,3),[1,'Test','School']]).rows[0].gender,'Not specified');assert.throws(()=>parseStudentRows([HEADERS,[1,'Test','School','wrong']]),/gender/);});

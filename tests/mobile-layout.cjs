@@ -9,14 +9,14 @@ const output=require('path').resolve('artifacts/mobile');fs.mkdirSync(output,{re
  const app=fs.readFileSync(root+'app.js','utf8');await page.addScriptTag({content:"const $=id=>document.getElementById(id);\n"+app.split('\n').find(l=>l.startsWith('function page(id)'))+'\n'+app.split('\n').find(l=>l.startsWith("document.querySelectorAll('[data-page]')"))});
  for(const width of [320,390,430,768,1280]){
   await page.setViewportSize({width,height:844});
-  for(const id of ['overview','payments','receipts','students','treasury','admin']){
+  for(const id of ['overview','attendance','payments','receipts','students','treasury','admin']){
    await page.locator('nav button[data-page="'+id+'"]').click();
    const metrics=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth}));assert.ok(metrics.scroll<=width+1,`${id} overflows at ${width}: ${JSON.stringify(metrics)}`);
-   if(width===390&&['overview','payments','treasury'].includes(id))await page.screenshot({path:output+'/'+id+'.png',fullPage:true});
+   if(width===390&&['overview','attendance','payments','treasury'].includes(id))await page.screenshot({path:output+'/'+id+'.png',fullPage:true});
   }
  }
  await page.setViewportSize({width:390,height:844});await page.locator('nav button[data-page="payments"]').click();await page.locator('#profileDetails summary').click();assert.equal(await page.locator('#profileName').isVisible(),true);await page.locator('#profileDetails summary').click();
  await page.evaluate(()=>document.getElementById('editPaymentDialog').showModal());assert.ok(await page.locator('#editPaymentDialog').isVisible());await page.screenshot({path:output+'/dialog.png'});await page.evaluate(()=>document.getElementById('editPaymentDialog').close());
- await page.evaluate(()=>{document.getElementById('adminNav').hidden=true;document.getElementById('treasuryNav').hidden=true;});assert.equal(await page.locator('nav button:visible').count(),4);assert.equal(await page.locator('#adminNav').isVisible(),false);
- console.log('All six pages fit 320, 390, 430, 768 and 1280px. Navigation, profile disclosure, dialog and staff visibility passed.');await browser.close();
+ await page.evaluate(()=>{document.getElementById('adminNav').hidden=true;document.getElementById('treasuryNav').hidden=true;});assert.equal(await page.locator('nav button:visible').count(),5);assert.equal(await page.locator('#adminNav').isVisible(),false);
+ console.log('All seven pages fit 320, 390, 430, 768 and 1280px. Navigation, profile disclosure, dialog and staff visibility passed.');await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});

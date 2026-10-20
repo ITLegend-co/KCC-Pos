@@ -115,3 +115,28 @@ Treasury reports include six months of income/expenses, training and insurance c
 ## Installation
 
 The sign-in screen and account sidebar show the signed Android download at `downloads/KCC-POS.apk` only in ordinary Android browsers. The link is hidden on desktop and inside installed apps. Android version 2.0.0 displays the live site in its own app window, with native PDF preview/save/share/print and Excel selection. Android 6+, an updated Android System WebView and internet are required. Install this APK over the old launcher; sign in once inside the new app. See `android/README.md` for rebuilding and signing updates. Browser installation is supported with a project-scoped manifest and service worker, without custom prompts or installation notices. The worker does not cache payment records, Firebase traffic, PDFs or authentication data.
+
+## Attendance and student details
+
+Approved, email-verified staff and the administrator can use Attendance, search
+students by name or school, and clock students in and out. Clock-out asks
+“Clock out [student name]?” with No and Yes. Receive payment opens Daily payments
+with that student's ID selected; it does not save or charge a payment.
+
+Attendance stores device epoch time and the device's timezone offset for each
+clock-in/out, plus the staff ID/name. History is retained by clock-in date; active
+visits remain visible across midnight. Keep device clocks correct. Atomic writes
+and rules prevent duplicate active visits, repeated clock-outs and history edits.
+
+Staff can edit active students' name, school and gender. Student IDs and creator
+metadata remain fixed, and deletion/restoration remains administrator-only.
+Existing saved receipts retain their name/school snapshot. Gender is Male, Female
+or Not specified; unknown existing values are never inferred. The Excel template
+now has GENDER in column D. Blank gender and old three-column workbooks are still
+accepted as Not specified. Imports skip existing name/school duplicates; edit a
+student directly to update their details.
+
+Publish the complete updated `database.rules.json` in Firebase Realtime Database
+before using these features. GitHub Pages deployment does not publish database
+rules. The existing Android v2 app loads these website updates without an APK
+reinstall.

@@ -17,6 +17,36 @@ await step('approved staff Excel imports preserve records and retry safely',asyn
  await assert.rejects(staff.store.call('importStudents',{students:[{name:'Before bad row',school:'School'},{name:'Bad',school:''}]}));
  assert.equal(Object.values((await staff.db.ref('students').get()).val()).some(s=>s.name==='BEFORE BAD ROW'),false);
 });
+await step('staff edit student details while identity, creator and deletion controls remain protected',async()=>{
+ await staff.store.call('editStudent',{studentId:'S1',name:'Example Student',school:'Example School',gender:'Female'});
+ assert.equal((await staff.db.ref('students/S1/gender').get()).val(),'Female');
+ await assertFails(staff.db.ref('students/S1/createdBy').set('staff'));
+ await assertFails(staff.db.ref('students/S1/deleted').set(true));
+ await assertFails(staff.db.ref('students/S1').remove());
+ await assert.rejects(pending.store.call('editStudent',{studentId:'S1',name:'Changed',school:'School',gender:'Male'}));
+});
+await step('attendance allows approved staff, rejects races and preserves visit history',async()=>{
+ const at=1792461600000,studentId='S1';
+ await assert.rejects(pending.store.call('clockIn',{studentId,at,offset:-480}));
+ await assertFails(unverified.db.ref('attendance').get());
+ await staff.store.call('clockIn',{studentId,at,offset:-480});
+ let state=(await staff.db.ref('attendance/S1').get()).val(),id=state.activeId;
+ assert.equal(state.sessions[id].clockIn,at);assert.equal(state.sessions[id].clockInBy,'staff');
+ await assert.rejects(admin.store.call('clockIn',{studentId,at,offset:-480}),/already/);
+ await assertFails(staff.db.ref('attendance/S1/activeId').set(''));
+ await assertFails(staff.db.ref('attendance/S1/sessions/'+id+'/clockIn').set(at+1));
+ await assert.rejects(staff.store.call('clockOut',{studentId,sessionId:id,at:at-1,offset:-480}),/earlier/);
+ await admin.store.call('clockOut',{studentId,sessionId:id,at:at+3600000,offset:-480});
+ await assert.rejects(staff.store.call('clockOut',{studentId,sessionId:id,at:at+3600001,offset:-480}),/already/);
+ await assertFails(staff.db.ref('attendance/S1/sessions/'+id).remove());
+ await assertFails(admin.db.ref('attendance/S1').remove());
+ await staff.store.call('clockIn',{studentId,at:at+7200000,offset:-480});
+ state=(await staff.db.ref('attendance/S1').get()).val();assert.equal(Object.keys(state.sessions).length,2);
+ assert.equal(state.sessions[id].clockOut,at+3600000);
+ await staff.store.call('clockOut',{studentId,sessionId:state.activeId,at:at+7300000,offset:-480});
+ const outcomes=await Promise.allSettled([staff.store.call('clockIn',{studentId,at:at+8000000,offset:-480}),admin.store.call('clockIn',{studentId,at:at+8000000,offset:-480})]);
+ assert.equal(outcomes.filter(x=>x.status==='fulfilled').length,1);
+});
 const payment=(id,amount,date='2026-10-01',studentId='S1')=>({studentId,date,amount,method:'Cash',reference:'',requestId:id});
 await step('daily payments, retries and calendar boundaries',async()=>{await staff.store.call('addPayment',payment('request-00001',9.6));await staff.store.call('addPayment',payment('request-00001',9.6));await staff.store.call('addPayment',payment('request-00002',2.4,'2026-10-31'));await staff.store.call('addPayment',payment('request-00003',5,'2026-11-01'));const ledger=(await staff.db.ref('ledger/2026-10/S1').get()).val();assert.equal(ledger.totalCents,1200);await assert.rejects(staff.store.call('addPayment',payment('request-00001',10)),/different details/);});
 await step('stored payments and totals cannot be forged or deleted',async()=>{const ledger=(await staff.db.ref('ledger/2026-10/S1').get()).val();await assertFails(staff.db.ref('events/2026-10/S1/'+ledger.head+'/amountCents').set(100));await assertFails(staff.db.ref('events/2026-10/S1/'+ledger.head).remove());await assertFails(staff.db.ref('ledger/2026-10/S1/totalCents').set(1));await assertFails(staff.db.ref('ledger/2026-10/S1').remove());});

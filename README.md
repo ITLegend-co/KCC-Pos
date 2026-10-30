@@ -141,7 +141,19 @@ before using these features. GitHub Pages deployment does not publish database
 rules. The existing Android v2 app loads these website updates without an APK
 reinstall.
 
-### Pending attendance payments
-Attendance and Daily payments list unpaid visits across all months at RM5 per session. Existing unlinked training payments count against visits on the same attendance date, oldest visit first. Insurance does not count. Use **Receive payment** on the pending row to record a partial or full payment linked to that visit; the payment date remains the actual collection date, so receipts and treasury reflect when money was received. Voided or refunded payments no longer settle a visit. Existing late payments without an attendance link cannot be inferred automatically.
+### Attendance fees, student credit and FOC
 
-Publish the updated `database.rules.json` in the **kcc-pos Realtime Database** before using linked attendance payments. The only added permission is the optional training payment `attendanceSessionId`, validated against an existing visit for the same student. Existing approval and administrator protections remain in effect.
+Attendance and Daily payments list unpaid visits across all months. Staff select **Receive payment** to settle a visit; the payment date remains the actual collection date for receipts and treasury. A new training payment applies up to the outstanding fee to the selected visit (or the first unpaid visit on that payment date); the rest becomes student credit. Payments made without an unpaid visit become credit. Insurance never becomes training credit.
+
+Credit has no expiry and is applied only by clicking **Use credit** on unpaid attendance and confirming. This does not create a second cash collection. Existing unlinked payments still match same-day attendance. Historical surplus is not automatically converted to credit: older records did not distinguish advances from already delivered training. Historical payments made on a different date without an attendance link cannot be inferred as settling a specific visit. Credit applications retain the source payment, target visit, staff member and time. Committed application chains and transactions prevent concurrent duplicate use. Balances are derived from effective payment amounts; voids, refunds and corrections recalculate credit and may reopen attendance balances previously covered by that money.
+
+Under **Students → Edit**, approved staff and admin can toggle **Free of charge (FOC)** with an optional reason. The latest change records who changed it and when. FOC applies to future attendance only. Existing fees and FOC records stay unchanged.
+
+**Attendance → Session settings** is available to staff and admin. Defaults:
+- Monday–Thursday: 15:00–17:00
+- Friday: 14:00–16:00
+- Saturday Session 1: 09:00–11:00; Session 2: 11:00–13:00
+
+Staff can edit the day, name, times and fee, disable sessions, or add another session Monday–Saturday. The default fee is RM5 per session. Clock-in uses the device weekday and time: early arrivals use the first session; otherwise the latest session start is selected (Saturday 11:00 selects Session 2). There is no automatic extra charge at the boundary. **Continue to Session 2** confirms and closes the current attendance record and starts the next scheduled session atomically, applying the student's current FOC status. A second visit to the same scheduled session on the same date is rejected. Each attendance record freezes its session name, times, fee and FOC status; historical visits without a snapshot retain the original RM5 rate.
+
+Publish the complete updated `database.rules.json` in the **kcc-pos Realtime Database** before using this release. New rules validate session settings, immutable attendance snapshots, FOC audit fields, payment allocation fields and append-only credit applications. Approval and administrator protections remain in effect.

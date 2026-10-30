@@ -3,7 +3,7 @@ const fs=require('node:fs'),vm=require('node:vm'),crypto=require('node:crypto'),
 const {initializeTestEnvironment,assertFails,assertSucceeds}=require('@firebase/rules-unit-testing');
 const ADMIN='kjk86LonpVfk83NfpajQrhGxvOv1';
 (async()=>{const env=await initializeTestEnvironment({projectId:'demo-kcc-pos',database:{host:'127.0.0.1',port:9000,rules:fs.readFileSync(require('node:path').join(__dirname,'../database.rules.json'),'utf8')}});await env.clearDatabase();
-function client(id,verified=true){const db=env.authenticatedContext(id,{email:id===ADMIN?'adlybinbakran@gmail.com':id+'@example.com',email_verified:verified}).database();let source=fs.readFileSync(require('node:path').join(__dirname,'../public/store.js'),'utf8').replace(/^import .*;\n/,'').replaceAll('export ','');const context={console,Date,crypto,TextEncoder,fetch:async()=>({status:403}),getDatabase:()=>db,ref:(_,p)=>db.ref(p||undefined),get:r=>r.get(),set:(r,d)=>r.set(d),update:(r,d)=>r.update(d),push:r=>r.push(),runTransaction:async(r,fn)=>r.transaction(fn,undefined,false),onValue:(r,fn,e)=>{r.on('value',fn,e);return()=>r.off('value',fn);}};vm.createContext(context);vm.runInContext(source,context);context.auth={currentUser:{uid:id,email:id===ADMIN?'adlybinbakran@gmail.com':id+'@example.com'}};return {db,store:vm.runInContext('createStore({},auth)',context)};}
+function client(id,verified=true){const db=env.authenticatedContext(id,{email:id===ADMIN?'adlybinbakran@gmail.com':id+'@example.com',email_verified:verified}).database();let source=fs.readFileSync(require('node:path').join(__dirname,'../public/store.js'),'utf8').replace(/^import .*;\n/gm,'').replaceAll('export ','');const context={console,Date,crypto,TextEncoder,fetch:async()=>({status:403}),getDatabase:()=>db,ref:(_,p)=>db.ref(p||undefined),get:r=>r.get(),set:(r,d)=>r.set(d),update:(r,d)=>r.update(d),push:r=>r.push(),runTransaction:async(r,fn)=>r.transaction(fn,undefined,false),onValue:(r,fn,e)=>{r.on('value',fn,e);return()=>r.off('value',fn);}};vm.createContext(context);vm.runInContext(fs.readFileSync('public/session-model.js','utf8').replaceAll('export ','')+'\n'+fs.readFileSync('public/attendance-payments.js','utf8').replaceAll('export ','')+'\n'+source,context);context.auth={currentUser:{uid:id,email:id===ADMIN?'adlybinbakran@gmail.com':id+'@example.com'}};return {db,store:vm.runInContext('createStore({},auth)',context)};}
 const admin=client(ADMIN),staff=client('staff'),pending=client('pending'),unverified=client('staff',false);const step=async(label,f)=>{console.log('RUN '+label);await f();console.log('PASS '+label);};
 await step('admin bootstrap and student import',async()=>{await admin.store.call('registerProfile',{name:'Example Clerk'});await admin.store.call('initializeClub',{students:[{id:'S1',name:'Example Student',school:'Example School'},{id:'S2',name:'Another Student',school:'Example School'}]});});
 await step('staff profiles cannot self-approve',async()=>{await staff.store.call('registerProfile',{name:'Example Clerk'});await pending.store.call('registerProfile',{name:'Example Clerk'});await assertFails(pending.db.ref('users/pending/status').set('approved'));await assertFails(pending.db.ref('users/pending/role').set('admin'));await admin.store.call('reviewUser',{uid:'staff',status:'approved'});await staff.store.call('registerProfile',{name:'Example Clerk'});});
@@ -40,11 +40,11 @@ await step('attendance allows approved staff, rejects races and preserves visit 
  await assert.rejects(staff.store.call('clockOut',{studentId,sessionId:id,at:at+3600001,offset:-480}),/already/);
  await assertFails(staff.db.ref('attendance/S1/sessions/'+id).remove());
  await assertFails(admin.db.ref('attendance/S1').remove());
- await staff.store.call('clockIn',{studentId,at:at+7200000,offset:-480});
+ await staff.store.call('clockIn',{studentId,at:at+86400000,offset:-480});
  state=(await staff.db.ref('attendance/S1').get()).val();assert.equal(Object.keys(state.sessions).length,2);
  assert.equal(state.sessions[id].clockOut,at+3600000);
- await staff.store.call('clockOut',{studentId,sessionId:state.activeId,at:at+7300000,offset:-480});
- const outcomes=await Promise.allSettled([staff.store.call('clockIn',{studentId,at:at+8000000,offset:-480}),admin.store.call('clockIn',{studentId,at:at+8000000,offset:-480})]);
+ await staff.store.call('clockOut',{studentId,sessionId:state.activeId,at:at+86410000,offset:-480});
+ const outcomes=await Promise.allSettled([staff.store.call('clockIn',{studentId,at:at+172800000,offset:-480}),admin.store.call('clockIn',{studentId,at:at+172800000,offset:-480})]);
  assert.equal(outcomes.filter(x=>x.status==='fulfilled').length,1);
 });
 const payment=(id,amount,date='2026-10-01',studentId='S1')=>({studentId,date,amount,method:'Cash',reference:'',requestId:id});
@@ -179,6 +179,36 @@ await step('staff can link late training payments only to their student attendan
  await assertFails(staff.db.ref('events/2028-01/S1/forged-link').set({...event,previous:ledger.head,totalCents:1000,attendanceSessionId:'missing',requestId:'bad-link'}));
  await assertFails(staff.db.ref(path+'/attendanceSessionId').set('missing'));
  await assertSucceeds(staff.db.ref('ledger').get());await assertSucceeds(staff.db.ref('events').get());await assertSucceeds(staff.db.ref('paymentChanges').get());
+});
+await step('staff timetable, student FOC snapshots, Saturday continuation and credit are protected',async()=>{
+ const {defaultSchedule}=await import('../public/session-model.js'),{trainingWallet}=await import('../public/attendance-payments.js');
+ await staff.store.call('importStudents',{students:[{name:'Wallet Student',school:'Test School'}]});
+ const directory=(await staff.db.ref('students').get()).val(),studentId=Object.keys(directory).find(id=>directory[id].name==='WALLET STUDENT');
+ const slots=defaultSchedule();slots.extra={day:1,label:'Extra',start:'17:00',end:'19:00',feeCents:600,enabled:true};await staff.store.call('saveSchedule',{sessions:slots});
+ await assert.rejects(pending.store.call('saveSchedule',{sessions:slots}));await assertFails(unverified.db.ref('sessionSchedule').get());
+ await assert.rejects(staff.store.call('saveSchedule',{sessions:{a:{...slots.day1a},b:{...slots.day1a}}}),/overlap/);
+ const at=Date.parse('2026-10-31T08:30:00+08:00'),offset=-480;
+ await staff.store.call('clockIn',{studentId,at,offset});let attendance=(await staff.db.ref('attendance/'+studentId).get()).val(),first=attendance.activeId;
+ assert.equal(attendance.sessions[first].sessionLabel,'Session 1');assert.equal(attendance.sessions[first].feeCents,500);
+ await assertFails(staff.db.ref('attendance/'+studentId+'/sessions/'+first+'/feeCents').set(0));
+ const pay={studentId,date:'2026-10-31',amount:10,method:'Cash',reference:'Credit example',requestId:'wallet-payment',attendanceSessionId:first};await staff.store.call('addPayment',pay);await staff.store.call('addPayment',pay);
+ const l=(await staff.db.ref('ledger/2026-10/'+studentId).get()).val(),event=(await staff.db.ref('events/2026-10/'+studentId+'/'+l.head).get()).val();assert.equal(l.totalCents,1000);assert.equal(event.appliedCents,500);
+ await staff.store.call('continueSession',{studentId,sessionId:first,at:at+3*3600000,offset});attendance=(await staff.db.ref('attendance/'+studentId).get()).val();const second=attendance.activeId;assert.notEqual(first,second);assert.equal(attendance.sessions[second].sessionLabel,'Session 2');assert.ok(attendance.sessions[first].clockOut);
+ await assert.rejects(staff.store.call('continueSession',{studentId,sessionId:first,at:at+3*3600000,offset}),/changed/);
+ const before=trainingWallet({[studentId]:attendance},[{id:l.head,...event}]);assert.equal(before.credits[studentId],500);assert.equal(before.visits.find(v=>v.sessionId===second).dueCents,500);
+ await Promise.all([staff.store.call('useCredit',{studentId,sessionId:second}),admin.store.call('useCredit',{studentId,sessionId:second})]);
+ const h=(await staff.db.ref('creditHeads/'+studentId).get()).val(),apps=(await staff.db.ref('creditApplications/'+studentId).get()).val();let chain=[],head=h.head;while(head&&head!=='origin'){chain.unshift(apps[head]);head=apps[head].previous;}assert.equal(chain.length,1);
+ const settled=trainingWallet({[studentId]:attendance},[{id:l.head,...event}],chain);assert.equal(settled.credits[studentId],0);assert.equal(settled.visits.find(v=>v.sessionId===second).dueCents,0);assert.equal((await staff.db.ref('ledger/2026-10/'+studentId+'/totalCents').get()).val(),1000);
+ await assertFails(staff.db.ref('creditApplications/'+studentId+'/'+h.head+'/amountCents').set(999));await assertFails(staff.db.ref('creditHeads/'+studentId).remove());await assertFails(staff.db.ref('creditHeads/'+studentId).set({head:'invented'}));
+ await staff.store.call('editStudent',{studentId,name:'Wallet Student',school:'Test School',gender:'Not specified',foc:true,focReason:'New student trial'});
+ assert.equal((await staff.db.ref('students/'+studentId+'/focBy').get()).val(),'staff');assert.equal((await staff.db.ref('attendance/'+studentId+'/sessions/'+second+'/feeCents').get()).val(),500);
+ await staff.store.call('clockOut',{studentId,sessionId:second,at:at+4*3600000,offset});
+ await assert.rejects(staff.store.call('clockIn',{studentId,at:at+4*3600000,offset}),/already attended/);
+ await staff.store.call('clockIn',{studentId,at:Date.parse('2026-11-02T15:00:00+08:00'),offset});attendance=(await staff.db.ref('attendance/'+studentId).get()).val();const free=attendance.activeId;assert.equal(attendance.sessions[free].feeCents,0);assert.equal(attendance.sessions[free].foc,true);
+ await staff.store.call('editStudent',{studentId,name:'Wallet Student',school:'Test School',gender:'Not specified',foc:false,focReason:'Trial ended'});assert.equal((await staff.db.ref('attendance/'+studentId+'/sessions/'+free+'/feeCents').get()).val(),0);
+ await assertFails(staff.db.ref('students/'+studentId+'/foc').set(true));
+ await admin.store.call('paymentAction',{studentId,month:'2026-10',paymentId:l.head,action:'refund',reason:'Return collection',refundDate:'2026-11-02',refundAccount:'cash'});
+ const refunded=trainingWallet({[studentId]:attendance},[{id:l.head,...event,status:'refunded'}],chain);assert.equal(refunded.visits.find(v=>v.sessionId===second).dueCents,500);
 });
 await step('revoked staff lose reads and writes',async()=>{await admin.store.call('reviewUser',{uid:'staff',status:'rejected'});await assertFails(staff.db.ref('students').get());await assert.rejects(staff.store.call('addStudent',{name:'Example',school:'School'}));});
 await env.cleanup();console.log('ALL REALTIME RULES CHECKS PASSED');process.exit(0);

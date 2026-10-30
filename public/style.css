@@ -121,3 +121,5 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #91
 @media(max-width:700px){aside nav{grid-template-columns:repeat(4,minmax(0,1fr))}aside nav:has(#adminNav[hidden]){grid-template-columns:repeat(3,minmax(0,1fr))}#attendanceRows td:nth-child(2)::before,#attendanceHistory td:nth-child(2)::before{content:"Clock in"}#attendanceHistory td:nth-child(3)::before{content:"Clock out"}#studentRows td:nth-child(3)::before,#excelRows td:nth-child(3)::before{content:"Gender"}}
 
 .pending-payments .tablewrap{max-height:420px;overflow:auto}
+
+.session-setting{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:16px 0;border-bottom:1px solid #dce4de}.session-setting label{min-width:0}.session-setting input,.session-setting select{max-width:100%}@media(max-width:600px){.session-setting{grid-template-columns:repeat(2,minmax(0,1fr))}}

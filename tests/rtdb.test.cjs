@@ -167,6 +167,19 @@ await step('cheque is blocked for new entries and edits while historical actions
   assert.equal(change.method,'Cheque');assert.equal(change.action,action);
  }
 });
+await step('staff can link late training payments only to their student attendance',async()=>{
+ const sessions=(await staff.db.ref('attendance/S1/sessions').get()).val(),sessionId=Object.keys(sessions)[0];
+ const d={...payment('attendance-late',5,'2028-01-02'),attendanceSessionId:sessionId};
+ await staff.store.call('addPayment',d);await staff.store.call('addPayment',d);
+ const ledger=(await staff.db.ref('ledger/2028-01/S1').get()).val(),path='events/2028-01/S1/'+ledger.head,event=(await staff.db.ref(path).get()).val();
+ assert.equal(ledger.totalCents,500);assert.equal(event.attendanceSessionId,sessionId);assert.equal(event.date,'2028-01-02');
+ await assert.rejects(staff.store.call('addPayment',{...d,attendanceSessionId:Object.keys(sessions)[1]}),/different details/);
+ await assert.rejects(staff.store.call('addPayment',{...d,category:'insurance',requestId:'bad-insurance'}),/attendance session/);
+ await assert.rejects(staff.store.call('addPayment',{...d,studentId:'S2',requestId:'bad-student'}),/attendance session/);
+ await assertFails(staff.db.ref('events/2028-01/S1/forged-link').set({...event,previous:ledger.head,totalCents:1000,attendanceSessionId:'missing',requestId:'bad-link'}));
+ await assertFails(staff.db.ref(path+'/attendanceSessionId').set('missing'));
+ await assertSucceeds(staff.db.ref('ledger').get());await assertSucceeds(staff.db.ref('events').get());await assertSucceeds(staff.db.ref('paymentChanges').get());
+});
 await step('revoked staff lose reads and writes',async()=>{await admin.store.call('reviewUser',{uid:'staff',status:'rejected'});await assertFails(staff.db.ref('students').get());await assert.rejects(staff.store.call('addStudent',{name:'Example',school:'School'}));});
 await env.cleanup();console.log('ALL REALTIME RULES CHECKS PASSED');process.exit(0);
 })().catch(e=>{console.error(e);process.exit(1)});

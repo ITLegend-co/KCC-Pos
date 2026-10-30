@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/*-unit.test.cjs",
-    "check": "node --check public/app.js && node --check public/store.js && node --check public/pdf.js && node --check public/student-import.js && node --check public/receipt-description.js && node --check public/treasury.js && node --check public/treasury-model.js && node --check public/install.js && node --check public/sw.js && node --check public/platform.js && node --check public/attendance.js && node --check public/student-picker.js",
+    "check": "node --check public/app.js && node --check public/store.js && node --check public/pdf.js && node --check public/student-import.js && node --check public/receipt-description.js && node --check public/treasury.js && node --check public/treasury-model.js && node --check public/install.js && node --check public/sw.js && node --check public/platform.js && node --check public/attendance-payments.js && node --check public/attendance.js && node --check public/student-picker.js",
     "test:rules": "node tests/rtdb.test.cjs",
     "test:mobile": "node tests/mobile-layout.cjs && node tests/attendance-ui.cjs"
   },

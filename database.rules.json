@@ -125,6 +125,9 @@
             },
             "receivedByName": {
               ".validate": "newData.isString() && newData.val() == root.child('users').child(auth.uid).child('name').val()"
+            },
+            "attendanceSessionId": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100 && root.child('attendance').child($studentId).child('sessions').child(newData.val()).exists()"
             }
           }
         }

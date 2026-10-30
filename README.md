@@ -140,3 +140,8 @@ Publish the complete updated `database.rules.json` in Firebase Realtime Database
 before using these features. GitHub Pages deployment does not publish database
 rules. The existing Android v2 app loads these website updates without an APK
 reinstall.
+
+### Pending attendance payments
+Attendance and Daily payments list unpaid visits across all months at RM5 per session. Existing unlinked training payments count against visits on the same attendance date, oldest visit first. Insurance does not count. Use **Receive payment** on the pending row to record a partial or full payment linked to that visit; the payment date remains the actual collection date, so receipts and treasury reflect when money was received. Voided or refunded payments no longer settle a visit. Existing late payments without an attendance link cannot be inferred automatically.
+
+Publish the updated `database.rules.json` in the **kcc-pos Realtime Database** before using linked attendance payments. The only added permission is the optional training payment `attendanceSessionId`, validated against an existing visit for the same student. Existing approval and administrator protections remain in effect.

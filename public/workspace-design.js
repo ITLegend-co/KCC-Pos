@@ -1,0 +1,6 @@
+export function setupWorkspaceDesign({$,page,isAdmin}){
+ function showView(id){const panel=$(id);if(!panel)return;document.querySelectorAll('[data-view-panel="'+panel.dataset.viewPanel+'"]').forEach(e=>e.hidden=e!==panel);const tabs=panel.parentNode.querySelectorAll('[data-view]');tabs.forEach(b=>{const active=b.dataset.view===id;b.setAttribute('aria-selected',String(active));b.tabIndex=active?0:-1;});}
+ document.querySelectorAll('[data-view]').forEach(b=>{b.onclick=()=>showView(b.dataset.view);b.onkeydown=e=>{const tabs=[...b.parentNode.children],i=tabs.indexOf(b);if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const next=e.key==='Home'?tabs[0]:e.key==='End'?tabs.at(-1):tabs[(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length];next.click();next.focus();}};});
+ for(const id of ['openSessionSettings','moreSessionSettings'])$(id).onclick=()=>$('sessionSettingsDialog').showModal();$('closeSessionSettings').onclick=()=>$('sessionSettingsDialog').close();
+ return {showView,access:()=>{document.querySelectorAll('[data-admin-only]').forEach(e=>e.hidden=!isAdmin());},reset:()=>{$('sessionSettingsDialog').close();showView('attendance-current');showView('treasury-summary');}};
+}

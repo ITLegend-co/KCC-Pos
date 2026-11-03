@@ -164,3 +164,13 @@ Approved staff land on Attendance; administrators land on Overview. Accounts mis
 Student pickers accept name/school search and a direct tap on a result (keyboard arrows and Enter also work). Attendance separates Currently here, Unpaid and History; session settings opens in its own dialog. Student names in the directory open an all-month detail page showing attendance fees, training/insurance payments, unused credit and recorded credit applications. FOC information shows the latest saved change only, because earlier FOC changes were not retained by the existing schema.
 
 Treasury separates Summary, Transactions, Reconciliation and Assets, with the combined CIMB + cash closing balance prominent on Summary. Overview separates unpaid fees, unused credit and requests awaiting review from recorded collections. This layout release does not change database rules or financial operations.
+
+### Attendance calendar and historical imports
+
+Attendance → History shows a monthly calendar with distinct student and session counts. Select a day, then a student, to view session timestamps, the collecting staff member, payments, applied credit and outstanding fees. The reporting-month control is shown only for Monthly receipts and Treasury.
+
+Publish `database.rules.json` in Firebase Realtime Database before using historical imports. Admin can upload a private JSON file (`version: 1`, `rows: [{name, school, date: "YYYY-MM-DD", count: 1}]`) under Attendance → History → Import historical attendance. Map every source name to an active student; new-student creation is an explicit option. Imports use the agreed Monday–Saturday schedule in Malaysia time; a single Saturday attendance uses Session 1 and a count of two creates both sessions. Imported times are labelled as scheduled times. No payments are created and legacy same-date collections are not automatically applied to imported attendance. Later explicitly linked collections or credit applications can settle these fees.
+
+Imports are append-only and admin-only. A student/date with any existing device attendance is skipped in full. Retrying an import skips already imported days. Live attendance takes precedence if it appears after an import. Uploaded rosters must stay private and must never be committed to this public repository.
+
+School FOC eligibility covers SM/SMK Maktab Sabah, SM/SMK St Michael (including existing Micheal spelling), SM/SMK La Salle (including Lasalle), and SMK Bandaraya, with optional Kota Kinabalu suffixes. Their existing unpaid attendance is waived in the wallet without changing saved payment totals, consuming credit or creating refunds. Individual FOC status remains available for other students.

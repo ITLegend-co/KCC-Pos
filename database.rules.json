@@ -139,7 +139,7 @@
               ".validate": "newData.isString() && newData.val() == root.child('users').child(auth.uid).child('name').val()"
             },
             "attendanceSessionId": {
-              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100 && root.child('attendance').child($studentId).child('sessions').child(newData.val()).exists()"
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100 && (root.child('attendance').child($studentId).child('sessions').child(newData.val()).exists() || root.child('importedAttendance').child($studentId).child(newData.val().replace('import-','').replace('_0','').replace('_1','')).child('sessions').child(newData.val()).exists())"
             },
             "appliedCents": {
               ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('amountCents').val() && (newData.val() == 0 || newData.parent().child('attendanceSessionId').exists())"
@@ -851,7 +851,7 @@
         "sessions": {
           "$sessionId": {
             ".write": "(auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))) && newData.exists() && ((!data.exists() && ((!root.child('attendance').child($studentId).child('activeId').exists() || root.child('attendance').child($studentId).child('activeId').val() == '') || newData.parent().child(root.child('attendance').child($studentId).child('activeId').val()).child('clockOut').exists()) && newData.parent().parent().child('activeId').val() == $sessionId && root.child('students').child($studentId).exists() && root.child('students').child($studentId).child('deleted').val() != true && !newData.child('clockOut').exists() && !newData.child('clockOutBy').exists() && !newData.child('clockOutName').exists() && !newData.child('clockOutOffset').exists() && newData.child('clockInBy').val() == auth.uid && newData.child('clockInName').val() == root.child('users').child(auth.uid).child('name').val()) || (data.exists() && !data.child('clockOut').exists() && root.child('attendance').child($studentId).child('activeId').val() == $sessionId && newData.parent().parent().child('activeId').val() != $sessionId && newData.child('clockIn').val() == data.child('clockIn').val() && newData.child('clockInOffset').val() == data.child('clockInOffset').val() && newData.child('clockInBy').val() == data.child('clockInBy').val() && newData.child('clockInName').val() == data.child('clockInName').val() && newData.hasChildren(['clockOut','clockOutOffset','clockOutBy','clockOutName']) && newData.child('clockOutBy').val() == auth.uid && newData.child('clockOutName').val() == root.child('users').child(auth.uid).child('name').val() && newData.child('clockOut').val() >= data.child('clockIn').val()))",
-            ".validate": "newData.hasChildren(['clockIn','clockInOffset','clockInBy','clockInName']) && (data.exists() ? (newData.child('scheduleId').val() == data.child('scheduleId').val() && newData.child('sessionLabel').val() == data.child('sessionLabel').val() && newData.child('sessionStart').val() == data.child('sessionStart').val() && newData.child('sessionEnd').val() == data.child('sessionEnd').val() && newData.child('standardFeeCents').val() == data.child('standardFeeCents').val() && newData.child('feeCents').val() == data.child('feeCents').val() && newData.child('foc').val() == data.child('foc').val()) : (newData.hasChildren([\"scheduleId\", \"sessionLabel\", \"sessionStart\", \"sessionEnd\", \"standardFeeCents\", \"feeCents\", \"foc\"]) && root.child('sessionSchedule').child('sessions').child(newData.child('scheduleId').val()).child('enabled').val() == true && newData.child('sessionLabel').val() == root.child('sessionSchedule').child('sessions').child(newData.child('scheduleId').val()).child('label').val() && newData.child('sessionStart').val() == root.child('sessionSchedule').child('sessions').child(newData.child('scheduleId').val()).child('start').val() && newData.child('sessionEnd').val() == root.child('sessionSchedule').child('sessions').child(newData.child('scheduleId').val()).child('end').val() && newData.child('standardFeeCents').val() == root.child('sessionSchedule').child('sessions').child(newData.child('scheduleId').val()).child('feeCents').val() && newData.child('foc').val() == (root.child('students').child($studentId).child('foc').val() == true) && newData.child('feeCents').val() == (newData.child('foc').val() == true ? 0 : newData.child('standardFeeCents').val())))",
+            ".validate": "newData.hasChildren(['clockIn','clockInOffset','clockInBy','clockInName']) && (data.exists() ? (newData.child('scheduleId').val() == data.child('scheduleId').val() && newData.child('sessionLabel').val() == data.child('sessionLabel').val() && newData.child('sessionStart').val() == data.child('sessionStart').val() && newData.child('sessionEnd').val() == data.child('sessionEnd').val() && newData.child('standardFeeCents').val() == data.child('standardFeeCents').val() && newData.child('feeCents').val() == data.child('feeCents').val() && newData.child('foc').val() == data.child('foc').val()) : (newData.hasChildren([\"scheduleId\", \"sessionLabel\", \"sessionStart\", \"sessionEnd\", \"standardFeeCents\", \"feeCents\", \"foc\"]) && root.child('sessionSchedule').child('sessions').child(newData.child('scheduleId').val()).child('enabled').val() == true && newData.child('sessionLabel').val() == root.child('sessionSchedule').child('sessions').child(newData.child('scheduleId').val()).child('label').val() && newData.child('sessionStart').val() == root.child('sessionSchedule').child('sessions').child(newData.child('scheduleId').val()).child('start').val() && newData.child('sessionEnd').val() == root.child('sessionSchedule').child('sessions').child(newData.child('scheduleId').val()).child('end').val() && newData.child('standardFeeCents').val() == root.child('sessionSchedule').child('sessions').child(newData.child('scheduleId').val()).child('feeCents').val() && newData.child('foc').val() == ((root.child('students').child($studentId).child('foc').val() == true || root.child('students').child($studentId).child('school').val().toUpperCase().matches(/^(SMK? MAKTAB SABAH|SMK? ST (MICHAEL|MICHEAL)|SMK? LA ?SALLE|SMK BANDARAYA)(,.*)?$/))) && newData.child('feeCents').val() == (newData.child('foc').val() == true ? 0 : newData.child('standardFeeCents').val())))",
             "clockIn": {
               ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() < 8640000000000000"
             },
@@ -952,7 +952,7 @@
       "$studentId": {
         "$id": {
           ".write": "auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved')) && !data.exists() && newData.exists()",
-          ".validate": "newData.hasChildren(['studentId','sessionId','paymentMonth','paymentId','amountCents','previous','by','name','at']) && root.child('events').child(newData.child('paymentMonth').val()).child($studentId).child(newData.child('paymentId').val()).exists() && root.child('attendance').child($studentId).child('sessions').child(newData.child('sessionId').val()).exists()",
+          ".validate": "newData.hasChildren(['studentId','sessionId','paymentMonth','paymentId','amountCents','previous','by','name','at']) && root.child('events').child(newData.child('paymentMonth').val()).child($studentId).child(newData.child('paymentId').val()).exists() && (root.child('attendance').child($studentId).child('sessions').child(newData.child('sessionId').val()).exists() || root.child('importedAttendance').child($studentId).child(newData.child('sessionId').val().replace('import-','').replace('_0','').replace('_1','')).child('sessions').child(newData.child('sessionId').val()).exists())",
           "studentId": {
             ".validate": "newData.val() == $studentId"
           },
@@ -996,6 +996,87 @@
         },
         "$other": {
           ".validate": false
+        }
+      }
+    },
+    "importedAttendance": {
+      ".read": "auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))",
+      "$studentId": {
+        "$date": {
+          ".write": "auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' && !data.exists() && newData.exists() && root.child('students').child($studentId).exists() && root.child('students').child($studentId).child('deleted').val() != true",
+          ".validate": "newData.hasChildren(['date','count','by','at','sessions'])",
+          "date": {
+            ".validate": "newData.val() == $date"
+          },
+          "count": {
+            ".validate": "newData.val() == 1 || newData.val() == 2"
+          },
+          "by": {
+            ".validate": "newData.val() == auth.uid"
+          },
+          "at": {
+            ".validate": "newData.isString()"
+          },
+          "sessions": {
+            ".validate": "newData.hasChild('import-' + $date + '_0') && (newData.parent().child('count').val() == 1 ? !newData.hasChild('import-' + $date + '_1') : newData.hasChild('import-' + $date + '_1'))",
+            "$sessionId": {
+              "clockIn": {
+                ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() < 8640000000000000"
+              },
+              "clockInOffset": {
+                ".validate": "newData.isNumber() && newData.val() >= -840 && newData.val() <= 840"
+              },
+              "clockInBy": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160"
+              },
+              "clockInName": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160"
+              },
+              "clockOut": {
+                ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() < 8640000000000000"
+              },
+              "clockOutOffset": {
+                ".validate": "newData.isNumber() && newData.val() >= -840 && newData.val() <= 840"
+              },
+              "clockOutBy": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160"
+              },
+              "clockOutName": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160"
+              },
+              "scheduleId": {
+                ".validate": "newData.isString() && newData.val().length <= 100"
+              },
+              "sessionLabel": {
+                ".validate": "newData.isString() && newData.val().length <= 100"
+              },
+              "sessionStart": {
+                ".validate": "newData.isString() && newData.val().length <= 100"
+              },
+              "sessionEnd": {
+                ".validate": "newData.isString() && newData.val().length <= 100"
+              },
+              "standardFeeCents": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+              },
+              "feeCents": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+              },
+              "foc": {
+                ".validate": "newData.isBoolean()"
+              },
+              "imported": {
+                ".validate": "newData.val() == true"
+              },
+              ".validate": "($sessionId == 'import-' + $date + '_0' || $sessionId == 'import-' + $date + '_1') && newData.hasChildren(['clockIn','clockInOffset','clockInBy','clockInName','clockOut','clockOutOffset','clockOutBy','clockOutName','scheduleId','sessionLabel','sessionStart','sessionEnd','standardFeeCents','feeCents','foc','imported']) && newData.child('clockInBy').val() == auth.uid && newData.child('clockOutBy').val() == auth.uid && newData.child('clockInOffset').val() == -480 && newData.child('clockOutOffset').val() == -480 && newData.child('clockOut').val() > newData.child('clockIn').val()",
+              "$other": {
+                ".validate": false
+              }
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
         }
       }
     }

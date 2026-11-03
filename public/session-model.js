@@ -2,4 +2,8 @@ export function defaultSchedule(){const rows={};for(let day=1;day<=6;day++){rows
 export function deviceDate(at,offset){return new Date(at-offset*60000).toISOString().slice(0,10);}
 export function scheduledSessions(schedule,at,offset){const date=new Date(at-offset*60000);return Object.entries(schedule||defaultSchedule()).filter(([,s])=>s.enabled&&s.day===date.getUTCDay()).map(([id,s])=>({id,...s})).sort((a,b)=>a.start.localeCompare(b.start)||a.id.localeCompare(b.id));}
 export function detectSession(schedule,at,offset){const rows=scheduledSessions(schedule,at,offset),time=new Date(at-offset*60000).toISOString().slice(11,16);return [...rows].reverse().find(s=>s.start<=time)||rows[0]||null;}
-export function sessionCharge(slot,student){return {scheduleId:slot.id,sessionLabel:slot.label,sessionStart:slot.start,sessionEnd:slot.end,standardFeeCents:slot.feeCents,feeCents:student.foc?0:slot.feeCents,foc:student.foc===true};}
+export function sessionCharge(slot,student){return {scheduleId:slot.id,sessionLabel:slot.label,sessionStart:slot.start,sessionEnd:slot.end,standardFeeCents:slot.feeCents,feeCents:isFoc(student)?0:slot.feeCents,foc:isFoc(student)};}
+
+export function schoolFoc(school){return /^(SMK? MAKTAB SABAH|SMK? ST (MICHAEL|MICHEAL)|SMK? LA ?SALLE|SMK BANDARAYA)$/.test(String(school||'').toUpperCase().split(',')[0].replace(/\./g,'').trim().replace(/\s+/g,' '));}
+export function isFoc(student={}){return student.foc===true||schoolFoc(student.school);}
+export function mergeAttendance(live={},imports={}){const result=Object.fromEntries(Object.entries(live).map(([id,r])=>[id,{...r,sessions:{...r.sessions}}]));for(const [id,days]of Object.entries(imports||{})){const existing=Object.values(live[id]?.sessions||{});for(const [day,record]of Object.entries(days)){if(existing.some(s=>deviceDate(s.clockIn,s.clockInOffset)===day))continue;result[id]||={activeId:'',sessions:{}};Object.assign(result[id].sessions,record.sessions||{});}}return result;}

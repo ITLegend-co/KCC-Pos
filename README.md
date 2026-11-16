@@ -174,3 +174,11 @@ Publish `database.rules.json` in Firebase Realtime Database before using histori
 Imports are append-only and admin-only. A student/date with any existing device attendance is skipped in full. Retrying an import skips already imported days. Live attendance takes precedence if it appears after an import. Uploaded rosters must stay private and must never be committed to this public repository.
 
 School FOC eligibility covers SM/SMK Maktab Sabah, SM/SMK St Michael (including existing Micheal spelling), SM/SMK La Salle (including Lasalle), and SMK Bandaraya, with optional Kota Kinabalu suffixes. Their existing unpaid attendance is waived in the wallet without changing saved payment totals, consuming credit or creating refunds. Individual FOC status remains available for other students.
+
+### Attendance corrections and staff approval
+
+In **Attendance → History**, use **Add attendance**, or select a calendar date and student to edit/delete an individual completed session. Admin changes apply directly. Staff submit a reason and an immutable request; the **Attendance requests and approvals** panel lets the admin approve and apply, or reject with a reason. Conflicting requests become outdated. Clock out active sessions before correcting them.
+
+Corrections use append-only `attendanceChanges` events plus transaction-controlled `attendanceChangeHeads`; the original live/imported record stays intact. `attendanceRequests` and rejection reviews are immutable. Publish the updated `database.rules.json` in Firebase Realtime Database before using this feature. GitHub Pages deployment does not deploy Firebase rules.
+
+Manual additions follow the configured session and current student FOC status. Edited attendance keeps its original fee and payment allocation. Deletion removes outstanding attendance charges from the calendar/unpaid list but retains payments and consumed credit: it does not issue a refund or invent new credit. Use the existing approved payment refund workflow for money returned. The correction-history panel retains the actor, reason, timestamps and each committed version.

@@ -139,7 +139,7 @@
               ".validate": "newData.isString() && newData.val() == root.child('users').child(auth.uid).child('name').val()"
             },
             "attendanceSessionId": {
-              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100 && (root.child('attendance').child($studentId).child('sessions').child(newData.val()).exists() || root.child('importedAttendance').child($studentId).child(newData.val().replace('import-','').replace('_0','').replace('_1','')).child('sessions').child(newData.val()).exists())"
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100 && (root.child('attendance').child($studentId).child('sessions').child(newData.val()).exists() || root.child('attendanceChangeHeads').child($studentId).child(newData.val()).exists() || root.child('importedAttendance').child($studentId).child(newData.val().replace('import-','').replace('_0','').replace('_1','')).child('sessions').child(newData.val()).exists())"
             },
             "appliedCents": {
               ".validate": "newData.isNumber() && newData.val() % 1 == 0 && newData.val() >= 0 && newData.val() <= newData.parent().child('amountCents').val() && (newData.val() == 0 || newData.parent().child('attendanceSessionId').exists())"
@@ -952,7 +952,7 @@
       "$studentId": {
         "$id": {
           ".write": "auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved')) && !data.exists() && newData.exists()",
-          ".validate": "newData.hasChildren(['studentId','sessionId','paymentMonth','paymentId','amountCents','previous','by','name','at']) && root.child('events').child(newData.child('paymentMonth').val()).child($studentId).child(newData.child('paymentId').val()).exists() && (root.child('attendance').child($studentId).child('sessions').child(newData.child('sessionId').val()).exists() || root.child('importedAttendance').child($studentId).child(newData.child('sessionId').val().replace('import-','').replace('_0','').replace('_1','')).child('sessions').child(newData.child('sessionId').val()).exists())",
+          ".validate": "newData.hasChildren(['studentId','sessionId','paymentMonth','paymentId','amountCents','previous','by','name','at']) && root.child('events').child(newData.child('paymentMonth').val()).child($studentId).child(newData.child('paymentId').val()).exists() && (root.child('attendance').child($studentId).child('sessions').child(newData.child('sessionId').val()).exists() || root.child('attendanceChangeHeads').child($studentId).child(newData.child('sessionId').val()).exists() || root.child('importedAttendance').child($studentId).child(newData.child('sessionId').val().replace('import-','').replace('_0','').replace('_1','')).child('sessions').child(newData.child('sessionId').val()).exists())",
           "studentId": {
             ".validate": "newData.val() == $studentId"
           },
@@ -1077,6 +1077,241 @@
           "$other": {
             ".validate": false
           }
+        }
+      }
+    },
+    "attendanceChanges": {
+      ".read": "auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))",
+      "$studentId": {
+        "$sessionId": {
+          "$id": {
+            "studentId": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+            },
+            "sessionId": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+            },
+            "action": {
+              ".validate": "newData.val() == 'add' || newData.val() == 'edit' || newData.val() == 'delete'"
+            },
+            "reason": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 400"
+            },
+            "previous": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+            },
+            "session": {
+              ".validate": "newData.hasChildren(['clockIn','clockOut','clockInOffset','clockOutOffset','clockInBy','clockOutBy','clockInName','clockOutName','feeCents','foc']) && newData.child('clockOut').val() > newData.child('clockIn').val() && newData.child('clockOut').val() <= now",
+              "clockIn": {
+                ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() < 8640000000000000"
+              },
+              "clockInOffset": {
+                ".validate": "newData.isNumber() && newData.val() >= -840 && newData.val() <= 840"
+              },
+              "clockInBy": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160"
+              },
+              "clockInName": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160"
+              },
+              "clockOut": {
+                ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() < 8640000000000000"
+              },
+              "clockOutOffset": {
+                ".validate": "newData.isNumber() && newData.val() >= -840 && newData.val() <= 840"
+              },
+              "clockOutBy": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160"
+              },
+              "clockOutName": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160"
+              },
+              "$other": {
+                ".validate": false
+              },
+              "scheduleId": {
+                ".validate": "newData.isString() && newData.val().length <= 100"
+              },
+              "sessionLabel": {
+                ".validate": "newData.isString() && newData.val().length <= 100"
+              },
+              "sessionStart": {
+                ".validate": "newData.isString() && newData.val().length <= 100"
+              },
+              "sessionEnd": {
+                ".validate": "newData.isString() && newData.val().length <= 100"
+              },
+              "standardFeeCents": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+              },
+              "feeCents": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+              },
+              "foc": {
+                ".validate": "newData.isBoolean()"
+              },
+              "imported": {
+                ".validate": "newData.val() == true"
+              },
+              "allocationDate": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 10"
+              },
+              "allocationClockIn": {
+                ".validate": "newData.isNumber() && newData.val() > 0"
+              }
+            },
+            "by": {
+              ".validate": "newData.val() == auth.uid"
+            },
+            "name": {
+              ".validate": "newData.val() == root.child('users').child(auth.uid).child('name').val()"
+            },
+            "at": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+            },
+            "$other": {
+              ".validate": "false"
+            },
+            "requestId": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+            },
+            ".write": "(auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1') && !data.exists() && newData.exists()",
+            ".validate": "newData.hasChildren(['studentId','sessionId','action','reason','previous','session','by','name','at']) && newData.child('studentId').val() == $studentId && newData.child('sessionId').val() == $sessionId && root.child('students').child($studentId).exists() && newData.child('previous').val() == (root.child('attendanceChangeHeads').child($studentId).child($sessionId).exists() ? root.child('attendanceChangeHeads').child($studentId).child($sessionId).val() : 'origin')"
+          }
+        }
+      }
+    },
+    "attendanceChangeHeads": {
+      ".read": "auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))",
+      "$studentId": {
+        "$sessionId": {
+          ".write": "(auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1') && newData.isString()",
+          ".validate": "root.child('attendanceChanges').child($studentId).child($sessionId).child(newData.val()).child('previous').val() == (data.exists() ? data.val() : 'origin')"
+        }
+      }
+    },
+    "attendanceRequests": {
+      ".read": "auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))",
+      "$id": {
+        "studentId": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+        },
+        "sessionId": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+        },
+        "action": {
+          ".validate": "newData.val() == 'add' || newData.val() == 'edit' || newData.val() == 'delete'"
+        },
+        "reason": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 400"
+        },
+        "previous": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
+        },
+        "session": {
+          ".validate": "newData.hasChildren(['clockIn','clockOut','clockInOffset','clockOutOffset','clockInBy','clockOutBy','clockInName','clockOutName','feeCents','foc']) && newData.child('clockOut').val() > newData.child('clockIn').val() && newData.child('clockOut').val() <= now",
+          "clockIn": {
+            ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() < 8640000000000000"
+          },
+          "clockInOffset": {
+            ".validate": "newData.isNumber() && newData.val() >= -840 && newData.val() <= 840"
+          },
+          "clockInBy": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160"
+          },
+          "clockInName": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160"
+          },
+          "clockOut": {
+            ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() < 8640000000000000"
+          },
+          "clockOutOffset": {
+            ".validate": "newData.isNumber() && newData.val() >= -840 && newData.val() <= 840"
+          },
+          "clockOutBy": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160"
+          },
+          "clockOutName": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160"
+          },
+          "$other": {
+            ".validate": false
+          },
+          "scheduleId": {
+            ".validate": "newData.isString() && newData.val().length <= 100"
+          },
+          "sessionLabel": {
+            ".validate": "newData.isString() && newData.val().length <= 100"
+          },
+          "sessionStart": {
+            ".validate": "newData.isString() && newData.val().length <= 100"
+          },
+          "sessionEnd": {
+            ".validate": "newData.isString() && newData.val().length <= 100"
+          },
+          "standardFeeCents": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+          },
+          "feeCents": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+          },
+          "foc": {
+            ".validate": "newData.isBoolean()"
+          },
+          "imported": {
+            ".validate": "newData.val() == true"
+          },
+          "allocationDate": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 10"
+          },
+          "allocationClockIn": {
+            ".validate": "newData.isNumber() && newData.val() > 0"
+          }
+        },
+        "by": {
+          ".validate": "newData.val() == auth.uid"
+        },
+        "name": {
+          ".validate": "newData.val() == root.child('users').child(auth.uid).child('name').val()"
+        },
+        "at": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+        },
+        "$other": {
+          ".validate": "false"
+        },
+        "clockIn": {
+          ".validate": "newData.isNumber()"
+        },
+        "clockOut": {
+          ".validate": "newData.isNumber()"
+        },
+        "offset": {
+          ".validate": "newData.isNumber() && newData.val() >= -840 && newData.val() <= 840"
+        },
+        ".write": "(auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))) && !data.exists() && newData.exists()",
+        ".validate": "newData.hasChildren(['studentId','sessionId','action','reason','previous','session','by','name','at','clockIn','clockOut','offset']) && root.child('students').child(newData.child('studentId').val()).exists()"
+      }
+    },
+    "attendanceRequestReviews": {
+      ".read": "auth != null && (auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1' || (auth.token.email_verified == true && root.child('users').child(auth.uid).child('status').val() == 'approved'))",
+      "$id": {
+        ".write": "(auth != null && auth.uid == 'kjk86LonpVfk83NfpajQrhGxvOv1') && !data.exists() && newData.exists()",
+        ".validate": "newData.hasChildren(['decision','reason','by','at']) && root.child('attendanceRequests').child($id).exists()",
+        "decision": {
+          ".validate": "newData.val() == 'rejected'"
+        },
+        "reason": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 400"
+        },
+        "by": {
+          ".validate": "newData.val() == auth.uid"
+        },
+        "at": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+        },
+        "$other": {
+          ".validate": "false"
         }
       }
     }

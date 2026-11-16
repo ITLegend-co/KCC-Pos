@@ -7,3 +7,14 @@ export function sessionCharge(slot,student){return {scheduleId:slot.id,sessionLa
 export function schoolFoc(school){return /^(SMK? MAKTAB SABAH|SMK? ST (MICHAEL|MICHEAL)|SMK? LA ?SALLE|SMK BANDARAYA)$/.test(String(school||'').toUpperCase().split(',')[0].replace(/\./g,'').trim().replace(/\s+/g,' '));}
 export function isFoc(student={}){return student.foc===true||schoolFoc(student.school);}
 export function mergeAttendance(live={},imports={}){const result=Object.fromEntries(Object.entries(live).map(([id,r])=>[id,{...r,sessions:{...r.sessions}}]));for(const [id,days]of Object.entries(imports||{})){const existing=Object.values(live[id]?.sessions||{});for(const [day,record]of Object.entries(days)){if(existing.some(s=>deviceDate(s.clockIn,s.clockInOffset)===day))continue;result[id]||={activeId:'',sessions:{}};Object.assign(result[id].sessions,record.sessions||{});}}return result;}
+
+// Corrections retain original financial allocation dates and fees.
+export function applyAttendanceChanges(records={},events={},heads={}){
+ const result=JSON.parse(JSON.stringify(records));
+ for(const [studentId,sessions] of Object.entries(heads||{}))for(const [sessionId,head]of Object.entries(sessions)){
+  const e=events[studentId]?.[sessionId]?.[head];if(!e)continue;
+  result[studentId]||={activeId:'',sessions:{}};
+  result[studentId].sessions[sessionId]={...e.session,attendanceDeleted:e.action==='delete',attendanceChangeId:head,attendanceReason:e.reason};
+ }
+ return result;
+}

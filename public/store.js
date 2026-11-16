@@ -86,6 +86,7 @@ export function createStore(app,auth,insurance=false){const db=getDatabase(app,D
   const previous=await read('attendanceChangeHeads/'+studentId+'/'+sessionId)||'origin';
   if(d.expectedHead!==undefined&&d.expectedHead!==previous)throw Error('Attendance changed since this request. Submit a new request.');
   let session=current&&Object.fromEntries(Object.entries(current).filter(([k])=>!k.startsWith('attendance')));
+  if(session){session.feeCents??=500;session.standardFeeCents??=500;session.foc??=false;}
   if(action!=='delete'){
    const {at,offset}=deviceTime({at:d.clockIn,offset:d.offset}),out=deviceTime({at:d.clockOut,offset:d.offset}).at;
    if(out<=at||out>Date.now()||deviceDate(at,offset)!==deviceDate(out,offset))throw Error('Use completed clock-in/out times on the same day, not in the future.');

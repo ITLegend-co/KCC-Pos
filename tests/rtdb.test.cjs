@@ -297,6 +297,9 @@ await step('attendance corrections require admin approval and retain immutable a
  await staff.store.call('requestAttendanceChange',{...draft,sessionId:'manual-admin',action:'edit',requestId:'stale-attendance'});
  await admin.store.call('changeAttendance',{...draft,sessionId:'manual-admin',action:'edit',clockOut:Date.parse('2026-10-05T08:45Z')});
  await assert.rejects(admin.store.call('reviewAttendanceChange',{id:'stale-attendance',decision:'approved'}),/changed/);
+ await env.withSecurityRulesDisabled(async context=>{await context.database().ref('attendance/'+studentId).set({activeId:'',sessions:{legacy:{clockIn:draft.clockIn,clockOut:draft.clockIn,clockInOffset:-480,clockOutOffset:-480,clockInBy:'staff',clockOutBy:'staff',clockInName:'Staff',clockOutName:'Staff'}}});});
+ await admin.store.call('changeAttendance',{studentId,sessionId:'legacy',action:'delete',reason:'Accidental zero-length visit'});
+
 
 });
 await env.cleanup();console.log('ALL REALTIME RULES CHECKS PASSED');process.exit(0);

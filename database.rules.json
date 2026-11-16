@@ -1101,7 +1101,7 @@
               ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
             },
             "session": {
-              ".validate": "newData.hasChildren(['clockIn','clockOut','clockInOffset','clockOutOffset','clockInBy','clockOutBy','clockInName','clockOutName','feeCents','foc']) && newData.child('clockOut').val() > newData.child('clockIn').val() && newData.child('clockOut').val() <= now",
+              ".validate": "newData.hasChildren(['clockIn','clockOut','clockInOffset','clockOutOffset','clockInBy','clockOutBy','clockInName','clockOutName','feeCents','foc']) && newData.child('clockOut').val() >= newData.child('clockIn').val() && newData.child('clockOut').val() <= now",
               "clockIn": {
                 ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() < 8640000000000000"
               },
@@ -1209,7 +1209,7 @@
           ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100"
         },
         "session": {
-          ".validate": "newData.hasChildren(['clockIn','clockOut','clockInOffset','clockOutOffset','clockInBy','clockOutBy','clockInName','clockOutName','feeCents','foc']) && newData.child('clockOut').val() > newData.child('clockIn').val() && newData.child('clockOut').val() <= now",
+          ".validate": "newData.hasChildren(['clockIn','clockOut','clockInOffset','clockOutOffset','clockInBy','clockOutBy','clockInName','clockOutName','feeCents','foc']) && newData.child('clockOut').val() >= newData.child('clockIn').val() && newData.child('clockOut').val() <= now",
           "clockIn": {
             ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() < 8640000000000000"
           },
